@@ -19,6 +19,8 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
           <Route path="contact" element={<Contact />} />
           <Route path="shop/switch-tester" element={<SwitchTester />} />
           <Route path="cart" element={<Cart />} />
+
+      
         </Route>
       </Routes>
     </BrowserRouter>

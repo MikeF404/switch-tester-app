@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/tooltip";
 import { log } from "console";
 import SwitchTesterPricing from "@/components/SwitchTesterPricing";
+import SwitchSelectList from "@/components/SwitchSelectList";
 interface Switch {
   id: number;
   name: string;
@@ -65,24 +66,9 @@ const SwitchTester: React.FC = () => {
       </div>
 
       {/* Scrollable Switch Grid Panel */}
-      <div className="w-full lg:w-2/3 p-4 lg:p-8 overflow-y-auto">
-        <h2 className="text-2xl font-bold mb-4">Available Switches</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {switches.map((switchItem) => (
-            <Card
-              key={switchItem.id}
-              className="flex flex-col items-center p-4"
-            >
-              <img
-                src={switchItem.image}
-                alt={switchItem.name}
-                className="w-24 h-24 object-cover mb-2"
-              />
-              <p className="text-center">{switchItem.name}</p>
-            </Card>
-          ))}
-        </div>
-      </div>
+      <CardTitle className="pt-6 px-6 pb-2">Available Switches</CardTitle>
+    
+      <SwitchSelectList />
     </div>
   );
 };

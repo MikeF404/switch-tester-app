@@ -14,12 +14,15 @@ const SwitchTesterPricing: React.FC = () => {
     "15": 13.99,
     "20": 17.99,
   };
+  console.log(switchPrices);
 
   const keycapPrices: Record<KeycapType, number> = {
     none: 0,
     random: 0.1,
     transparent: 0.2,
   };
+
+  
 
   useEffect(() => {
     const baseSwitchPrice = switchPrices[switchCount];
@@ -41,10 +44,10 @@ const SwitchTesterPricing: React.FC = () => {
       >
         <ToggleGroupItem value="10">10</ToggleGroupItem>
         <ToggleGroupItem value="15">15</ToggleGroupItem>
-        <ToggleGroupItem value="20" disabled>
-          20
-        </ToggleGroupItem>
+        <ToggleGroupItem value="20" disabled>20</ToggleGroupItem>
+        
       </ToggleGroup>
+
 
       <p>Select Keycaps:</p>
       <ToggleGroup
