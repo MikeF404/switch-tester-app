@@ -66,7 +66,7 @@ const SwitchTester: React.FC = () => {
       </div>
 
       {/* Scrollable Switch Grid Panel */}
-      <CardTitle className="pt-6 px-6 pb-2">Available Switches</CardTitle>
+      
     
       <SwitchSelectList />
     </div>

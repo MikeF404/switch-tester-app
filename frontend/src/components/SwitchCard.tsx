@@ -30,8 +30,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   return (
     <Card
-      className={`w-full ${
-        quantity > 0 ? "rounded-xl shadow-lg" : "rounded-lg"
+      className={`  w-full rounded-xl relative pb-16 shadow-lg ${
+        quantity > 0 ? "border-black  " : ""
       } transition-all duration-300`}
     >
       <CardHeader className="p-0">
@@ -39,20 +39,19 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <img
             src={product.image}
             alt={product.name}
-            className={`w-full h-full object-cover ${
-              quantity > 0 ? "rounded-t-xl" : "rounded-t-lg"
+            className={`w-full h-full object-cover rounded-t-xl
             }`}
           />
         </div>
       </CardHeader>
       <CardContent className="p-4">
         <h2 className="text-lg font-semibold">{product.name}</h2>
-        <p className="text-sm text-gray-600">{product.description}</p>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex mt-auto absolute bottom-0 left-0 right-0 ">
+        <p className="text-sm text-gray-600 w-full">{product.description}</p>
         {quantity === 0 ? (
           <Button className="w-full" onClick={() => onIncrement(product.id)}>
-            Add to Cart
+            Add
           </Button>
         ) : (
           <div className="flex items-center justify-between w-full">
@@ -70,7 +69,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 <Minus className="h-4 w-4" />
               )}
             </Button>
-            <span className="mx-2 min-w-[2rem] text-center">{quantity}</span>
+            <span className="mx-1 min-w-[1.5rem] text-center">{quantity}</span>
             <Button
               variant="outline"
               size="icon"

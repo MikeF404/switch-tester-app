@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ProductCard from "./SwitchCard";
+import { Card, CardContent, CardTitle } from "./ui/card";
 
 interface Product {
   id: number;
@@ -136,19 +137,22 @@ const SwitchSelectList: React.FC = () => {
   );
 
   return (
-    <div className="w-full lg:w-2/3 p-4 lg:p-8 overflow-y-auto">
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {sortedProducts.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            quantity={quantities[product.id]}
-            onIncrement={incrementQuantity}
-            onDecrement={decrementQuantity}
-          />
-        ))}
-      </div>
-    </div>
+    <Card className="flex flex-col w-full overflow-y-hidden">
+      <CardTitle className="px-6 pt-6 pb-2">Available Switches</CardTitle>
+      <CardContent className="w-full lg:px-6 pb-6 pt-2 overflow-y-auto">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {sortedProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              quantity={quantities[product.id]}
+              onIncrement={incrementQuantity}
+              onDecrement={decrementQuantity}
+            />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
