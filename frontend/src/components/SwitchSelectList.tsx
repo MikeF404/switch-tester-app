@@ -119,35 +119,43 @@ const products: Product[] = [
   },
 ];
 
-const SwitchSelectList: React.FC = () => {
-  const [quantities, setQuantities] = useState<Record<number, number>>(
-    Object.fromEntries(products.map((p) => [p.id, 0]))
-  );
+interface SwitchSelectListProps {
+  selectedSwitches: Record<number, number>;
+  onIncrementSwitch: (id: number) => void;
+  onDecrementSwitch: (id: number) => void;
+  totalSelected: number;
+  switchLimit: number;
+}
 
-  const incrementQuantity = (id: number) => {
-    setQuantities((prev) => ({ ...prev, [id]: prev[id] + 1 }));
-  };
-
-  const decrementQuantity = (id: number) => {
-    setQuantities((prev) => ({ ...prev, [id]: Math.max(0, prev[id] - 1) }));
-  };
-
+const SwitchSelectList: React.FC<SwitchSelectListProps> = ({
+  selectedSwitches,
+  onIncrementSwitch,
+  onDecrementSwitch,
+  totalSelected,
+  switchLimit,
+}) => {
   const sortedProducts = [...products].sort(
-    (a, b) => quantities[b.id] - quantities[a.id]
+    (a, b) => (selectedSwitches[b.id] || 0) - (selectedSwitches[a.id] || 0)
   );
 
   return (
     <Card className="flex flex-col w-full overflow-y-hidden">
-      <CardTitle className="px-6 pt-6 pb-2">Available Switches</CardTitle>
+      <CardTitle
+        className={`px-6 pt-6 pb-2 ${
+          totalSelected > switchLimit ? "text-red-500" : ""
+        }`}
+      >
+        Select Switches ({totalSelected}/{switchLimit})
+      </CardTitle>
       <CardContent className="w-full lg:px-6 pb-6 pt-2 overflow-y-auto">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {sortedProducts.map((product) => (
             <ProductCard
               key={product.id}
               product={product}
-              quantity={quantities[product.id]}
-              onIncrement={incrementQuantity}
-              onDecrement={decrementQuantity}
+              quantity={selectedSwitches[product.id] || 0}
+              onIncrement={onIncrementSwitch}
+              onDecrement={onDecrementSwitch}
             />
           ))}
         </div>

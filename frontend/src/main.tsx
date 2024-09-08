@@ -5,7 +5,7 @@ import App from "./App";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import Contact from "./pages/Contact";
-import SwitchTester from "./pages/SwitchTester";
+import SwitchTester from "./pages/SwitchTesterPage";
 import Cart from "./pages/Cart";
 import "./index.css";
 

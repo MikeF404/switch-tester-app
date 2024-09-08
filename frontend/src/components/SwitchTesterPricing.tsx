@@ -4,8 +4,16 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 type SwitchCount = "10" | "15" | "20";
 type KeycapType = "none" | "random" | "transparent";
 
-const SwitchTesterPricing: React.FC = () => {
-  const [switchCount, setSwitchCount] = useState<SwitchCount>("10");
+interface SwitchTesterPricingProps {
+  switchCount: SwitchCount;
+  setSwitchCount: React.Dispatch<React.SetStateAction<SwitchCount>>;
+}
+
+
+const SwitchTesterPricing: React.FC<SwitchTesterPricingProps> = ({
+  switchCount,
+  setSwitchCount,
+}) => {
   const [keycapType, setKeycapType] = useState<KeycapType>("none");
   const [totalPrice, setTotalPrice] = useState<number>(9.99);
 
@@ -14,15 +22,13 @@ const SwitchTesterPricing: React.FC = () => {
     "15": 13.99,
     "20": 17.99,
   };
-  console.log(switchPrices);
+
 
   const keycapPrices: Record<KeycapType, number> = {
     none: 0,
     random: 0.1,
     transparent: 0.2,
   };
-
-  
 
   useEffect(() => {
     const baseSwitchPrice = switchPrices[switchCount];
@@ -38,16 +44,12 @@ const SwitchTesterPricing: React.FC = () => {
         className="justify-start"
         type="single"
         value={switchCount}
-        onValueChange={(value) => {
-          if (value) setSwitchCount(value as SwitchCount);
-        }}
+        onValueChange={(value) => value && setSwitchCount(value as SwitchCount)}
       >
         <ToggleGroupItem value="10">10</ToggleGroupItem>
         <ToggleGroupItem value="15">15</ToggleGroupItem>
         <ToggleGroupItem value="20" disabled>20</ToggleGroupItem>
-        
       </ToggleGroup>
-
 
       <p>Select Keycaps:</p>
       <ToggleGroup
