@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { Toaster, toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
@@ -34,7 +34,7 @@ const SwitchTesterPage: React.FC = () => {
     const isOverLimit = totalSelectedSwitches > parseInt(switchCount);
     
   let navigate = useNavigate();
-  toast("event");
+
 
   const routeChange = () => {
     let path = `/cart`;
@@ -51,7 +51,13 @@ const SwitchTesterPage: React.FC = () => {
       );
     } else {
       // Add to cart logic here
-      toast.success("Added to cart successfully!");
+      toast.success("Item added to the Cart", {
+            description: "Items in the Cart: 1",
+            action: {
+              label: "Go to Cart",
+              onClick: () => routeChange(),
+            },
+          });
     }
   };
 
@@ -72,6 +78,7 @@ const SwitchTesterPage: React.FC = () => {
       <div className="w-full lg:w-1/3 p-4 lg:p-8 bg-gray-100">
         <Card>
           <CardHeader>
+           
             <CardTitle>Tester Information</CardTitle>
           </CardHeader>
           <CardContent>
