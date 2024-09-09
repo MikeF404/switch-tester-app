@@ -38,7 +38,6 @@ const SwitchTesterPage: React.FC = () => {
 
   const routeChange = () => {
     let path = `/cart`;
-    console.log(2);
     navigate(path);
   };
 

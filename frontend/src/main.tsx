@@ -9,6 +9,10 @@ import SwitchTester from "./pages/SwitchTesterPage";
 import Cart from "./pages/Cart";
 import "./index.css";
 
+
+import LoginPage from "./pages/LoginPage";
+import { RegisterPage } from "./pages/RegisterPage";
+
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <BrowserRouter>
@@ -19,8 +23,8 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
           <Route path="contact" element={<Contact />} />
           <Route path="shop/switch-tester" element={<SwitchTester />} />
           <Route path="cart" element={<Cart />} />
-
-      
+          <Route path="login" element={<LoginPage />} />
+          <Route path="register" element={<RegisterPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

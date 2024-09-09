@@ -126,7 +126,12 @@ const Header: React.FC = () => {
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuItem>Support</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Logout</DropdownMenuItem>
+            <Link
+              to="/login"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <DropdownMenuItem>Logout</DropdownMenuItem>
+            </Link>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
