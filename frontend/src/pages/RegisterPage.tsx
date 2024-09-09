@@ -11,13 +11,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export const description =
   "A simple login form with email and password. The submit button says 'Sign in'.";
 
-export function RegisterPage() {
+const RegisterPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  let navigate = useNavigate();
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -30,12 +32,23 @@ export function RegisterPage() {
         body: JSON.stringify({ email, password }),
       });
       if (!response.ok) {
+        if (response.status === 400) {
+          toast.error(
+            "An account with this email is already created. Try to log in",
+            {
+              action: {
+                label: "go to login",
+                onClick: () => navigate("/login"),
+              },
+            }
+          );
+        }
         throw new Error("HTTP error " + response.status);
       }
       const data = await response.json();
 
       localStorage.setItem("token", data.token);
-      let navigate = useNavigate();
+
       navigate("/dashboard");
     } catch (error: any) {
       console.error("Authentication error:", error.message);
@@ -89,4 +102,6 @@ export function RegisterPage() {
       </Card>
     </div>
   );
-}
+};
+
+export default RegisterPage;

@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export const description =
   "A simple login form with email and password. The submit button says 'Sign in'.";
@@ -19,8 +20,9 @@ const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  
-  const handleSubmit = async (e: any) => {
+  let navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const response = await fetch(`http://127.0.0.1:5000/login`, {
@@ -31,15 +33,19 @@ const LoginPage: React.FC = () => {
         body: JSON.stringify({ email, password }),
       });
       if (!response.ok) {
+        if (response.status === 401) {
+          toast.error("Wrong login or password! Please try again");
+        }
         throw new Error("HTTP error " + response.status);
       }
       const data = await response.json();
 
       localStorage.setItem("token", data.token);
-      let navigate = useNavigate();
+
       navigate("/");
-    } catch (error: any) {
-      console.error("Authentication error:", error.message);
+    } catch (error) {
+        setPassword("");
+      console.error("Authentication error:", error);
     }
   };
 
@@ -85,7 +91,9 @@ const LoginPage: React.FC = () => {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col">
-            <Button type="submit" className="w-full">Sign in</Button>
+            <Button type="submit" className="w-full">
+              Sign in
+            </Button>
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
               <Link to="/register" className="underline">

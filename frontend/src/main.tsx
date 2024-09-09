@@ -11,7 +11,7 @@ import "./index.css";
 
 
 import LoginPage from "./pages/LoginPage";
-import { RegisterPage } from "./pages/RegisterPage";
+import RegisterPage from "./pages/RegisterPage";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
