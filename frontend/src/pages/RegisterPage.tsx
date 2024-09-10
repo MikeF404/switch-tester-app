@@ -49,7 +49,7 @@ const RegisterPage: React.FC = () => {
 
       localStorage.setItem("token", data.token);
 
-      navigate("/dashboard");
+      navigate("/login");
     } catch (error: any) {
       console.error("Authentication error:", error.message);
     }

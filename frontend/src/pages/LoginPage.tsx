@@ -1,3 +1,4 @@
+import { useAuth } from "@/components/AuthProvider";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,10 +18,12 @@ export const description =
   "A simple login form with email and password. The submit button says 'Sign in'.";
 
 const LoginPage: React.FC = () => {
+    const { user, login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   let navigate = useNavigate();
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,12 +42,10 @@ const LoginPage: React.FC = () => {
         throw new Error("HTTP error " + response.status);
       }
       const data = await response.json();
-
-      localStorage.setItem("token", data.token);
-
+      login(email, data.token);
       navigate("/");
     } catch (error) {
-        setPassword("");
+      setPassword("");
       console.error("Authentication error:", error);
     }
   };

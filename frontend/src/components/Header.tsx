@@ -1,5 +1,5 @@
 import React from "react";
-import { CircleUser, Menu, Package2, Search } from "lucide-react";
+import { CircleUser, Menu, Package2, Search, ShoppingCart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,8 +12,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useAuth } from "./AuthProvider";
+import { log } from "console";
 
 const Header: React.FC = () => {
+  const { isAuthenticated, user, logout } = useAuth();
+
   return (
     <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
       <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
@@ -95,9 +99,6 @@ const Header: React.FC = () => {
             >
               Customers
             </Link>
-            <Link to="/" className="hover:text-foreground">
-              Settings
-            </Link>
           </nav>
         </SheetContent>
       </Sheet>
@@ -114,6 +115,12 @@ const Header: React.FC = () => {
           </div>
         </form>
         <DropdownMenu>
+          <Link to="/cart">
+            <Button variant="secondary" size="icon" className="rounded-full">
+              <ShoppingCart className="h-5 w-5" />
+              <span className="sr-only">Open Cart</span>
+            </Button>
+          </Link>
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" size="icon" className="rounded-full">
               <CircleUser className="h-5 w-5" />
@@ -121,7 +128,14 @@ const Header: React.FC = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>Profile</DropdownMenuLabel>
+            {localStorage.getItem("userEmail") ? (
+              <p className="text-muted-foreground text-sm mx-2">
+                {user?.email}
+              </p>
+            ) : (
+              ""
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuItem>Support</DropdownMenuItem>
@@ -129,8 +143,13 @@ const Header: React.FC = () => {
             <Link
               to="/login"
               className="text-muted-foreground hover:text-foreground"
+              onClick={logout}
             >
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              {isAuthenticated && user ? (
+                <DropdownMenuItem>Logout</DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem>Sign in</DropdownMenuItem>
+              )}
             </Link>
           </DropdownMenuContent>
         </DropdownMenu>
