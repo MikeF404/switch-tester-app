@@ -8,21 +8,22 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 
-interface Product {
+interface Switch {
   id: number;
   name: string;
-  description: string;
+  type: string;
+  force: string;
   image: string;
 }
 
-interface ProductCardProps {
-  product: Product;
+interface SwitchCardProps {
+  product: Switch;
   quantity: number;
   onIncrement: (id: number) => void;
   onDecrement: (id: number) => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({
+const ProductCard: React.FC<SwitchCardProps> = ({
   product,
   quantity,
   onIncrement,
@@ -30,7 +31,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   return (
     <Card
-      className={`  w-full rounded-xl relative pb-16 shadow-lg ${
+      className={`  w-full h-fit rounded-xl relative pb-16 shadow-lg ${
         quantity > 0 ? "border-black  " : ""
       } transition-all duration-300`}
     >
@@ -48,7 +49,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <h2 className="text-lg font-semibold">{product.name}</h2>
       </CardContent>
       <CardFooter className="flex mt-auto absolute bottom-0 left-0 right-0 ">
-        <p className="text-sm text-gray-600 w-full">{product.description}</p>
+        <p className="text-sm text-gray-600 w-full">{product.type + " " + product.force}</p>
         {quantity === 0 ? (
           <Button className="w-full" onClick={() => onIncrement(product.id)}>
             Add

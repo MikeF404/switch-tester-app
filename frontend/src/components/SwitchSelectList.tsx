@@ -1,123 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ProductCard from "./SwitchCard";
 import { Card, CardContent, CardTitle } from "./ui/card";
+import { toast } from "sonner";
 
-interface Product {
+interface Switch {
   id: number;
   name: string;
-  description: string;
+  type: string;
+  force: string;
   image: string;
 }
-const products: Product[] = [
-  {
-    id: 1,
-    name: "C3 EQUALZ X TKC Kiwi",
-    description: "Tactile 67g",
-    image: "https://placeholder.com/150",
-  },
-  {
-    id: 2,
-    name: "C3 EQUALZ X TKC Tangerine",
-    description: "Tactile 67g",
-    image: "https://placeholder.com/150",
-  },
-  {
-    id: 3,
-    name: "Headphones",
-    description: "Noise-cancelling wireless headphones",
-    image: "https://placeholder.com/150",
-  },
-  {
-    id: 4,
-    name: "Smartwatch",
-    description: "Track your fitness and stay connected",
-    image: "https://placeholder.com/150",
-  },
-  {
-    id: 5,
-    name: "Camera",
-    description: "Capture your memories in high resolution",
-    image: "https://placeholder.com/150",
-  },
-  {
-    id: 6,
-    name: "Tablet",
-    description: "Portable device for work and entertainment",
-    image: "https://placeholder.com/150",
-  },
-  {
-    id: 7,
-    name: "C3 EQUALZ X TKC Kiwi",
-    description: "Tactile 67g",
-    image: "https://placeholder.com/150",
-  },
-  {
-    id: 8,
-    name: "C3 EQUALZ X TKC Tangerine",
-    description: "Tactile 67g",
-    image: "https://placeholder.com/150",
-  },
-  {
-    id: 9,
-    name: "Headphones",
-    description: "Noise-cancelling wireless headphones",
-    image: "https://placeholder.com/150",
-  },
-  {
-    id: 10,
-    name: "Smartwatch",
-    description: "Track your fitness and stay connected",
-    image: "https://placeholder.com/150",
-  },
-  {
-    id: 11,
-    name: "Camera",
-    description: "Capture your memories in high resolution",
-    image: "https://placeholder.com/150",
-  },
-  {
-    id: 12,
-    name: "Tablet",
-    description: "Portable device for work and entertainment",
-    image: "https://placeholder.com/150",
-  },
-  {
-    id: 13,
-    name: "C3 EQUALZ X TKC Kiwi",
-    description: "Tactile 67g",
-    image: "https://placeholder.com/150",
-  },
-  {
-    id: 14,
-    name: "C3 EQUALZ X TKC Tangerine",
-    description: "Tactile 67g",
-    image: "https://placeholder.com/150",
-  },
-  {
-    id: 15,
-    name: "Headphones",
-    description: "Noise-cancelling wireless headphones",
-    image: "https://placeholder.com/150",
-  },
-  {
-    id: 16,
-    name: "Smartwatch",
-    description: "Track your fitness and stay connected",
-    image: "https://placeholder.com/150",
-  },
-  {
-    id: 17,
-    name: "Camera",
-    description: "Capture your memories in high resolution",
-    image: "https://placeholder.com/150",
-  },
-  {
-    id: 18,
-    name: "Tablet",
-    description: "Portable device for work and entertainment",
-    image: "https://placeholder.com/150",
-  },
-];
 
 interface SwitchSelectListProps {
   selectedSwitches: Record<number, number>;
@@ -127,14 +19,39 @@ interface SwitchSelectListProps {
   switchLimit: number;
 }
 
-const SwitchSelectList: React.FC<SwitchSelectListProps> = ({
-  selectedSwitches,
-  onIncrementSwitch,
+const SwitchSelectList: React.FC<SwitchSelectListProps> = ({ 
+  selectedSwitches, 
+  onIncrementSwitch, 
   onDecrementSwitch,
   totalSelected,
-  switchLimit,
+  switchLimit
 }) => {
-  const sortedProducts = [...products].sort(
+  const [switches, setSwitches] = useState<Switch[]>([]);
+
+
+    useEffect(() => {
+    const fetchSwitches = async () => {
+      try {
+        const response = await fetch("http://127.0.0.1:5000/switches", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        if (!response.ok){
+          throw new Error('HTTP error when loading switches '+ response.status);
+        }
+        const data = await response.json();
+        setSwitches(data);
+      } catch (error) {
+        toast.error("Error when loading available switches :(");
+        console.error('Error fetching switches:', error);
+      }
+    };
+
+    fetchSwitches();
+  }, []);
+    const sortedSwitches = [...switches].sort(
     (a, b) => (selectedSwitches[b.id] || 0) - (selectedSwitches[a.id] || 0)
   );
 
@@ -149,11 +66,11 @@ const SwitchSelectList: React.FC<SwitchSelectListProps> = ({
       </CardTitle>
       <CardContent className="w-full lg:px-6 pb-6 pt-2 overflow-y-auto">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {sortedProducts.map((product) => (
+          {sortedSwitches.map((switch_item) => (
             <ProductCard
-              key={product.id}
-              product={product}
-              quantity={selectedSwitches[product.id] || 0}
+              key={switch_item.id}
+              product={switch_item}
+              quantity={selectedSwitches[switch_item.id] || 0}
               onIncrement={onIncrementSwitch}
               onDecrement={onDecrementSwitch}
             />

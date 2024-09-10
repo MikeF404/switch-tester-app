@@ -1,11 +1,13 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Blueprint
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import os
+
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://mike-f:@localhost:5432/switch_tester_app_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -18,9 +20,22 @@ class Switch(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
+    force = db.Column(db.String(50), nullable=True)
+    type = db.Column(db.String(50), nullable=True)
+    icon_path = db.Column(db.String(255), nullable=True)
 
     def __repr__(self):
         return f'<Switch {self.name}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'quantity': self.quantity,
+            'force': self.force,
+            'type': self.type,
+            'icon_path': self.icon_path
+        }
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -51,7 +66,7 @@ def login():
     user = User.query.filter_by(email=data['email']).first()
     if user and bcrypt.check_password_hash(user.password, data['password']):
         token = generate_token(user.id)
-        new_session = Session(user_id=user.id, token=token, expiry=datetime.utcnow() + timedelta(days=1))
+        new_session = Session(user_id=user.id, token=token, expiry=datetime.now(timezone.utc) + timedelta(days=1))
         db.session.add(new_session)
         db.session.commit()
         return jsonify({"token": token}), 200
@@ -76,7 +91,7 @@ def token_required(f):
 def generate_token(user_id):
     payload = {
         'user_id': user_id,
-        'exp': datetime.utcnow() + timedelta(days=1)
+        'exp': datetime.now(timezone.utc) + timedelta(days=1)
     }
     return jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
 
@@ -85,6 +100,12 @@ def generate_token(user_id):
 @token_required
 def protected(current_user):
     return jsonify({"message": f"Hello, {current_user.email}!"}), 200
+
+
+@app.route('/switches', methods=['GET'])
+def get_switches():
+    switches = Switch.query.all()
+    return jsonify([switch.to_dict() for switch in switches])
 
 @app.route('/purchase', methods=['POST'])
 def purchase_switches():
