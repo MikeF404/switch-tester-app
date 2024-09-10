@@ -12,36 +12,34 @@ import {
 
 import SwitchTesterPricing from "@/components/SwitchTesterPricing";
 import SwitchSelectList from "@/components/SwitchSelectList";
-
-interface Switch {
-  id: number;
-  name: string;
-  image: string;
-}
+import { useCart } from "@/components/CartProvider";
 
 type SwitchCount = "10" | "15" | "20";
 
 const SwitchTesterPage: React.FC = () => {
-    const [switchCount, setSwitchCount] = useState<SwitchCount>("10");
-    const [selectedSwitches, setSelectedSwitches] = useState<
-      Record<number, number>
-    >({});
+  const [switchCount, setSwitchCount] = useState<SwitchCount>("10");
+  const [selectedSwitches, setSelectedSwitches] = useState<
+    Record<number, number>
+  >({});
+  const [keycapType, setKeycapType] = useState<
+    "none" | "transparent" | "random"
+  >("none");
+  const { addToCart } = useCart();
 
-    const totalSelectedSwitches = Object.values(selectedSwitches).reduce(
-      (a, b) => a + b,
-      0
-    );
-    const isOverLimit = totalSelectedSwitches > parseInt(switchCount);
-    
+  const totalSelectedSwitches = Object.values(selectedSwitches).reduce(
+    (a, b) => a + b,
+    0
+  );
+  const isOverLimit = totalSelectedSwitches > parseInt(switchCount);
+
   let navigate = useNavigate();
-
 
   const routeChange = () => {
     let path = `/cart`;
     navigate(path);
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (isOverLimit) {
       toast.error(`Please select exactly ${switchCount} switches.`);
     } else if (totalSelectedSwitches < parseInt(switchCount)) {
@@ -49,27 +47,38 @@ const SwitchTesterPage: React.FC = () => {
         `Please select ${switchCount} switches. You've only selected ${totalSelectedSwitches}.`
       );
     } else {
-      // Add to cart logic here
-      toast.success("Item added to the Cart", {
-            description: "Items in the Cart: 1",
-            action: {
-              label: "Go to Cart",
-              onClick: () => routeChange(),
-            },
-          });
+      try {
+        await addToCart({
+          size: parseInt(switchCount),
+          keycaps: keycapType,
+          switches: Object.entries(selectedSwitches).map(([id, quantity]) => ({
+            id: parseInt(id),
+            quantity,
+          })),
+        });
+        toast.success("Item added to the Cart", {
+          description: "Items in the Cart: 1",
+          action: {
+            label: "Go to Cart",
+            onClick: () => routeChange(),
+          },
+        });
+      } catch (error) {
+        toast.error("Failed to add to cart. Please try again.");
+      }
     }
   };
 
-    const handleIncrementSwitch = (id: number) => {
-      setSelectedSwitches((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
-    };
+  const handleIncrementSwitch = (id: number) => {
+    setSelectedSwitches((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
+  };
 
-    const handleDecrementSwitch = (id: number) => {
-      setSelectedSwitches((prev) => ({
-        ...prev,
-        [id]: Math.max(0, (prev[id] || 0) - 1),
-      }));
-    };
+  const handleDecrementSwitch = (id: number) => {
+    setSelectedSwitches((prev) => ({
+      ...prev,
+      [id]: Math.max(0, (prev[id] || 0) - 1),
+    }));
+  };
 
   return (
     <div className="h-[calc(100vh-64px)] flex flex-col lg:flex-row">
@@ -77,7 +86,6 @@ const SwitchTesterPage: React.FC = () => {
       <div className="w-full lg:w-1/3 p-4 lg:p-8 bg-gray-100">
         <Card>
           <CardHeader>
-           
             <CardTitle>Tester Information</CardTitle>
           </CardHeader>
           <CardContent>

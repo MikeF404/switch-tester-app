@@ -1,11 +1,14 @@
+from functools import wraps
 from flask import Flask, request, jsonify, Blueprint
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import JSON
 from sqlalchemy.exc import IntegrityError
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 import jwt
 from datetime import datetime, timedelta, timezone
 import os
+import logging
 
 
 app = Flask(__name__)
@@ -46,9 +49,30 @@ class Session(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     token = db.Column(db.String(500), nullable=False)
-    expiry = db.Column(db.DateTime, nullable=False)
+    expiry = db.Column(db.DateTime(timezone=True), nullable=False)
 
+    def __init__(self, user_id, token, expiry):
+        self.user_id = user_id
+        self.token = token
+        self.expiry = expiry.replace(tzinfo=timezone.utc) if expiry.tzinfo is None else expiry
 
+class Cart(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    cart_data = db.Column(JSON, nullable=False, default=list)
+    last_updated = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f'<Cart {self.id} for User {self.user_id}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'cart_data': self.cart_data,
+            'last_updated': self.last_updated.isoformat()
+        }
+    
 @app.route('/register', methods=['POST'])
 def register():
     data = request.json
@@ -66,24 +90,41 @@ def login():
     user = User.query.filter_by(email=data['email']).first()
     if user and bcrypt.check_password_hash(user.password, data['password']):
         token = generate_token(user.id)
-        new_session = Session(user_id=user.id, token=token, expiry=datetime.now(timezone.utc) + timedelta(days=1))
+        expiry = datetime.now(timezone.utc) + timedelta(days=1)
+        new_session = Session(user_id=user.id, token=token, expiry=expiry)
         db.session.add(new_session)
         db.session.commit()
         return jsonify({"token": token}), 200
     return jsonify({"message": "Invalid credentials"}), 401
 
 def token_required(f):
+    @wraps(f)
     def decorated(*args, **kwargs):
         token = request.headers.get('Authorization')
         if not token:
+            logging.error("Token is missing")
             return jsonify({"message": "Token is missing"}), 401
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
-            current_user = User.query.get(data['user_id'])
+            current_user = db.session.get(User, data['user_id'])
+            if not current_user:
+                logging.error(f"User not found for user_id: {data['user_id']}")
+                return jsonify({"message": "User not found"}), 401
             session = Session.query.filter_by(token=token, user_id=current_user.id).first()
-            if not session or session.expiry < datetime.utcnow():
-                return jsonify({"message": "Token is invalid or expired"}), 401
-        except:
+            if not session:
+                logging.error(f"No session found for user_id: {current_user.id}")
+                return jsonify({"message": "No valid session found"}), 401
+            if session.expiry < datetime.now(timezone.utc):
+                logging.error(f"Token expired for user_id: {current_user.id}")
+                return jsonify({"message": "Token has expired"}), 401
+        except jwt.ExpiredSignatureError:
+            logging.error("Token has expired")
+            return jsonify({"message": "Token has expired"}), 401
+        except jwt.InvalidTokenError as e:
+            logging.error(f"Invalid token: {str(e)}")
+            return jsonify({"message": "Invalid token"}), 401
+        except Exception as e:
+            logging.error(f"Unexpected error in token validation: {str(e)}")
             return jsonify({"message": "Token is invalid"}), 401
         return f(current_user, *args, **kwargs)
     return decorated
@@ -132,6 +173,51 @@ def purchase_switches():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/cart', methods=['GET'])
+@token_required
+def get_user_cart(current_user):
+    cart = Cart.query.filter_by(user_id=current_user.id).first()
+    if not cart or not cart.cart_data:
+        return jsonify({'message': 'Cart is empty'}), 200
+    
+    # Fetch switch names for all switches in the cart
+    switch_ids = set(item['id'] for tester in cart.cart_data for item in tester['switches'])
+    switches = {switch.id: switch.name for switch in Switch.query.filter(Switch.id.in_(switch_ids))}
+    
+    # Add switch names to the cart data
+    for tester in cart.cart_data:
+        for item in tester['switches']:
+            item['name'] = switches.get(item['id'], 'Unknown Switch')
+    
+    return jsonify(cart.to_dict()), 200
+
+@app.route('/api/cart/add', methods=['POST'])
+@token_required
+def add_item_to_cart(current_user):
+    data = request.json
+
+    cart = Cart.query.filter_by(user_id=current_user.id).first()
+    if not cart:
+        cart = Cart(user_id=current_user.id, cart_data=[])
+        db.session.add(cart)
+
+    tester = {
+        'size': data['size'],
+        'keycaps': data['keycaps'],
+        'switches': data['switches']
+    }
+    cart.cart_data.append(tester)
+    db.session.commit()
+
+    return jsonify({'message': 'Item added to cart', 'cart_count': len(cart.cart_data)}), 201
+
+@app.route('/api/cart/count', methods=['GET'])
+@token_required
+def get_user_cart_count(current_user):
+    cart = Cart.query.filter_by(user_id=current_user.id).first()
+    count = len(cart.cart_data) if cart else 0
+    return jsonify({'cart_count': count}), 200
 
 if __name__ == '__main__':
     with app.app_context():
