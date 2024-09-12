@@ -13,6 +13,7 @@ interface AuthContextType extends AuthState {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+//TODO: add export method to navigate to login in case of failed authentication
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {

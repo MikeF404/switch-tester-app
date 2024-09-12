@@ -1,7 +1,8 @@
 from functools import wraps
+import uuid
 from flask import Flask, request, jsonify, Blueprint
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import JSON
+from sqlalchemy import JSON, func
 from sqlalchemy.exc import IntegrityError
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
@@ -9,6 +10,7 @@ import jwt
 from datetime import datetime, timedelta, timezone
 import os
 import logging
+from sqlalchemy.orm.attributes import flag_modified
 
 
 app = Flask(__name__)
@@ -17,7 +19,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key') 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
-CORS(app, resources={r"/*": {"origins": ["http://localhost:5173", "http://127.0.0.1:5173"]}})
+CORS(app, resources={r"/*": {"origins": ["http://localhost:5173", "http://127.0.0.1:5173"], "methods": ["GET", "POST", "DELETE", "OPTIONS"]}})
 
 class Switch(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -59,11 +61,8 @@ class Session(db.Model):
 class Cart(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    cart_data = db.Column(JSON, nullable=False, default=list)
-    last_updated = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
-
-    def __repr__(self):
-        return f'<Cart {self.id} for User {self.user_id}>'
+    cart_data = db.Column(db.JSON, nullable=False, default=list)
+    last_updated = db.Column(db.DateTime(timezone=True), nullable=False, default=func.now(), onupdate=func.now())
 
     def to_dict(self):
         return {
@@ -72,6 +71,7 @@ class Cart(db.Model):
             'cart_data': self.cart_data,
             'last_updated': self.last_updated.isoformat()
         }
+
     
 @app.route('/register', methods=['POST'])
 def register():
@@ -174,12 +174,62 @@ def purchase_switches():
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/cart/add', methods=['POST'])
+@token_required
+def add_item_to_cart(current_user):
+    data = request.json
+
+    cart = Cart.query.filter_by(user_id=current_user.id).first()
+    if not cart:
+        cart = Cart(user_id=current_user.id, cart_data=[])
+        db.session.add(cart)
+    
+    if cart.cart_data is None:
+        cart.cart_data = []
+
+    tester = {
+        'id': str(uuid.uuid4()),
+        'size': data['size'],
+        'keycaps': data['keycaps'],
+        'switches': data['switches']
+    }
+    cart.cart_data.append(tester)
+    
+    # Mark the cart_data as modified
+    flag_modified(cart, "cart_data")
+    
+    db.session.commit()
+
+    return jsonify({'message': 'Item added to cart', 'cart_count': len(cart.cart_data)}), 201
+
+@app.route('/api/cart/remove/<string:item_id>', methods=['DELETE'])
+@token_required
+def remove_item_from_cart(current_user, item_id):
+    try:
+        cart = Cart.query.filter_by(user_id=current_user.id).first()
+        if not cart or not cart.cart_data:
+            return jsonify({'message': 'Cart is empty'}), 404
+
+        # Find the item with the matching ID
+        cart.cart_data = [item for item in cart.cart_data if item.get('id') != item_id]
+        
+        # Mark the cart_data as modified
+        flag_modified(cart, "cart_data")
+        
+        db.session.commit()
+
+        return jsonify({'message': 'Item removed from cart', 'cart_count': len(cart.cart_data)}), 200
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error removing item from cart: {str(e)}")
+        return jsonify({'message': 'An error occurred while removing the item from the cart'}), 500
+
 @app.route('/api/cart', methods=['GET'])
 @token_required
 def get_user_cart(current_user):
     cart = Cart.query.filter_by(user_id=current_user.id).first()
     if not cart or not cart.cart_data:
-        return jsonify({'message': 'Cart is empty'}), 200
+        return jsonify({'message': 'Cart is empty', 'cart_data': []}), 200
     
     # Fetch switch names for all switches in the cart
     switch_ids = set(item['id'] for tester in cart.cart_data for item in tester['switches'])
@@ -190,33 +240,13 @@ def get_user_cart(current_user):
         for item in tester['switches']:
             item['name'] = switches.get(item['id'], 'Unknown Switch')
     
-    return jsonify(cart.to_dict()), 200
-
-@app.route('/api/cart/add', methods=['POST'])
-@token_required
-def add_item_to_cart(current_user):
-    data = request.json
-
-    cart = Cart.query.filter_by(user_id=current_user.id).first()
-    if not cart:
-        cart = Cart(user_id=current_user.id, cart_data=[])
-        db.session.add(cart)
-
-    tester = {
-        'size': data['size'],
-        'keycaps': data['keycaps'],
-        'switches': data['switches']
-    }
-    cart.cart_data.append(tester)
-    db.session.commit()
-
-    return jsonify({'message': 'Item added to cart', 'cart_count': len(cart.cart_data)}), 201
+    return jsonify({'cart_data': cart.cart_data, 'cart_count': len(cart.cart_data)}), 200
 
 @app.route('/api/cart/count', methods=['GET'])
 @token_required
 def get_user_cart_count(current_user):
     cart = Cart.query.filter_by(user_id=current_user.id).first()
-    count = len(cart.cart_data) if cart else 0
+    count = len(cart.cart_data) if cart and cart.cart_data else 0
     return jsonify({'cart_count': count}), 200
 
 if __name__ == '__main__':

@@ -24,7 +24,7 @@ const SwitchTesterPage: React.FC = () => {
   const [keycapType, setKeycapType] = useState<
     "none" | "transparent" | "random"
   >("none");
-  const { addToCart } = useCart();
+  const { addToCart, cartCount } = useCart();
 
   const totalSelectedSwitches = Object.values(selectedSwitches).reduce(
     (a, b) => a + b,
@@ -57,7 +57,7 @@ const SwitchTesterPage: React.FC = () => {
           })),
         });
         toast.success("Item added to the Cart", {
-          description: "Items in the Cart: 1",
+          description: `Items in the Cart: ${cartCount}`,
           action: {
             label: "Go to Cart",
             onClick: () => routeChange(),
