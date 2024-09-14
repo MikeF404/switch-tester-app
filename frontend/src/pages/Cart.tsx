@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Minus, Trash } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
+import { useNavigate } from "react-router-dom";
 
 
 interface CartItem {
@@ -23,7 +24,9 @@ interface CartItem {
 const CartPage: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const { updateCartCount, removeFromCart } = useCart();
-
+  const ITEM_PRICE = 9.99; //TODO: get from backend
+  const navigate = useNavigate();
+  
   const fetchCart = async () => {
     try {
       const response = await fetch("http://127.0.0.1:5000/api/cart", {
@@ -54,30 +57,69 @@ const CartPage: React.FC = () => {
   };
 
   return (
-    <div>
-      <h1>Your Cart</h1>
-      {cartItems.length === 0 ? (
-        <p>Your cart is empty.</p>
-      ) : (
-        cartItems.map((item) => (
-          <div key={item.id}>
-            <h2>Tester</h2>
-            <p>Size: {item.size} switches</p>
-            <p>Keycaps: {item.keycaps}</p>
-            <h3>Switches:</h3>
-            <ul>
-              {item.switches.map((switchItem) => (
-                <li key={switchItem.id}>
-                  {switchItem.name}: {switchItem.quantity}
-                </li>
-              ))}
-            </ul>
-            <button onClick={() => handleRemoveItem(item.id)}>
-              Remove from cart
-            </button>
-          </div>
-        ))
-      )}
+    <div className="container mx-auto p-4">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Item</TableHead>
+            <TableHead>Description</TableHead>
+            <TableHead>Price</TableHead>
+            <TableHead>Action</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {cartItems.map((item) => (
+            <TableRow key={item.id}>
+              <TableCell className="flex flex-col items-center w-60">
+                <div className="flex flex-col items-center">
+                  <img
+                    src="https://www.thockking.com/cdn/shop/products/keyboard-mechanical-switch-switches-tester-fidget-desk-toy-4_900x.jpg?v=1657354186"
+                    alt="Custom Switch Tester"
+                    className={"w-60 h-40 object-cover self-start rounded-t-xl"}
+                  />
+                  
+                  <span className="mt-2">Custom Switch Tester</span>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="text-sm">
+                  <p>Details:</p>
+                  <p>size: {item.size}</p>
+                  <p>keycaps: {item.keycaps}</p>
+                  <p>switches:</p>
+                  <ul className="list-disc pl-5">
+                    {item.switches.map((switch_item) => (
+                      <li key={switch_item.id}>
+                        {switch_item.name} x{switch_item.quantity}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </TableCell>
+              <TableCell>${ITEM_PRICE.toFixed(2)}</TableCell>
+              <TableCell>
+                <Button
+                  variant="destructive"
+                  onClick={() => handleRemoveItem(item.id)}
+                >
+                  Remove
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <div className="mt-4 flex justify-between items-center">
+        <div className="text-xl font-bold">
+          Total: ${(ITEM_PRICE * cartItems.length).toFixed(2)}
+        </div>
+        <div className="space-x-4">
+          <Button variant="outline" onClick={() => navigate("/shop")}>
+            Continue Shopping
+          </Button>
+          <Button>Purchase</Button>
+        </div>
+      </div>
     </div>
   );
 };

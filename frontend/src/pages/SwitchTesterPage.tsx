@@ -83,7 +83,7 @@ const SwitchTesterPage: React.FC = () => {
   return (
     <div className="h-[calc(100vh-64px)] flex flex-col lg:flex-row">
       {/* Tester Information Panel */}
-      <div className="w-full lg:w-1/3 p-4 lg:p-8 bg-gray-100">
+      <div className="w-full lg:w-1/3 p-4 lg:p-8">
         <Card>
           <CardHeader>
             <CardTitle>Tester Information</CardTitle>
@@ -116,13 +116,15 @@ const SwitchTesterPage: React.FC = () => {
         </Card>
       </div>
       {/* Scrollable Switch Grid Panel */}
-      <SwitchSelectList
-        selectedSwitches={selectedSwitches}
-        onIncrementSwitch={handleIncrementSwitch}
-        onDecrementSwitch={handleDecrementSwitch}
-        totalSelected={totalSelectedSwitches}
-        switchLimit={parseInt(switchCount)}
-      />
+      <div className="w-full p-4 lg: pt-8">
+        <SwitchSelectList
+          selectedSwitches={selectedSwitches}
+          onIncrementSwitch={handleIncrementSwitch}
+          onDecrementSwitch={handleDecrementSwitch}
+          totalSelected={totalSelectedSwitches}
+          switchLimit={parseInt(switchCount)}
+        />
+      </div>
     </div>
   );
 };

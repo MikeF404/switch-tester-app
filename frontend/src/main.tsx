@@ -13,25 +13,28 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import { AuthProvider } from "./components/AuthProvider";
 import { CartProvider } from "./components/CartProvider";
+import { ThemeProvider } from "./providers/ThemeProvider";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <AuthProvider>
-      <CartProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<App />}>
-              <Route index element={<Home />} />
-              <Route path="shop" element={<Shop />} />
-              <Route path="contact" element={<Contact />} />
-              <Route path="shop/switch-tester" element={<SwitchTester />} />
-              <Route path="cart" element={<Cart />} />
-              <Route path="login" element={<LoginPage />} />
-              <Route path="register" element={<RegisterPage />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </CartProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <CartProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<App />}>
+                <Route index element={<Home />} />
+                <Route path="shop" element={<Shop />} />
+                <Route path="contact" element={<Contact />} />
+                <Route path="shop/switch-tester" element={<SwitchTester />} />
+                <Route path="cart" element={<Cart />} />
+                <Route path="login" element={<LoginPage />} />
+                <Route path="register" element={<RegisterPage />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </CartProvider>
+      </AuthProvider>
+    </ThemeProvider>
   </React.StrictMode>
 );

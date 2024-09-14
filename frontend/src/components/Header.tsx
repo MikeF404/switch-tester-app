@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "./AuthProvider";
 import { log } from "console";
+import { ModeToggle } from "./ModeToggle";
 
 const Header: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -114,13 +115,14 @@ const Header: React.FC = () => {
             />
           </div>
         </form>
-        <DropdownMenu>
+        <ModeToggle />
           <Link to="/cart">
             <Button variant="secondary" size="icon" className="rounded-full">
               <ShoppingCart className="h-5 w-5" />
               <span className="sr-only">Open Cart</span>
             </Button>
           </Link>
+        <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" size="icon" className="rounded-full">
               <CircleUser className="h-5 w-5" />
