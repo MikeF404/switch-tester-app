@@ -14,6 +14,7 @@ import RegisterPage from "./pages/RegisterPage";
 import { AuthProvider } from "./components/AuthProvider";
 import { CartProvider } from "./components/CartProvider";
 import { ThemeProvider } from "./providers/ThemeProvider";
+import CheckoutPage from "./pages/CheckoutPage";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
@@ -30,6 +31,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                 <Route path="cart" element={<Cart />} />
                 <Route path="login" element={<LoginPage />} />
                 <Route path="register" element={<RegisterPage />} />
+                <Route path="checkout" element={<CheckoutPage />} />
               </Route>
             </Routes>
           </BrowserRouter>

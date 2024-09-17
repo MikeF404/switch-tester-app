@@ -11,35 +11,54 @@ from datetime import datetime, timedelta, timezone
 import os
 import logging
 from sqlalchemy.orm.attributes import flag_modified
+import stripe
+from werkzeug.exceptions import BadRequest
+from dotenv import load_dotenv
+
+load_dotenv()  # This loads the variables from .env file
 
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://mike-f:@localhost:5432/switch_tester_app_db'
+
+# Use environment variables for database configuration
+db_user = os.getenv('DB_USER')
+db_password = os.getenv('DB_PASSWORD')
+db_host = os.getenv('DB_HOST')
+db_port = os.getenv('DB_PORT')
+db_name = os.getenv('DB_NAME')
+
+# Construct the database URI using the environment variables
+app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key') 
+
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 CORS(app, resources={r"/*": {"origins": ["http://localhost:5173", "http://127.0.0.1:5173"], "methods": ["GET", "POST", "DELETE", "OPTIONS"]}})
 
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+# endpoint_secret = os.getenv('STRIPE_WEBHOOK_SECRET')
+
 class Switch(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), unique=True, nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    brand = db.Column(db.String(100), nullable=False)
+    type = db.Column(db.String(50), nullable=False)
+    available = db.Column(db.Integer, nullable=False)
     force = db.Column(db.String(50), nullable=True)
-    type = db.Column(db.String(50), nullable=True)
-    icon_path = db.Column(db.String(255), nullable=True)
+    image = db.Column(db.String(255), nullable=True)
 
     def __repr__(self):
-        return f'<Switch {self.name}>'
+        return f'<Switch {self.brand} {self.name}>'
 
     def to_dict(self):
         return {
             'id': self.id,
             'name': self.name,
-            'quantity': self.quantity,
-            'force': self.force,
+            'brand': self.brand,
             'type': self.type,
-            'icon_path': self.icon_path
+            'available': self.available,
+            'force': self.force,
+            'image': self.image
         }
 
 class User(db.Model):
@@ -72,7 +91,36 @@ class Cart(db.Model):
             'last_updated': self.last_updated.isoformat()
         }
 
-    
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    address = db.Column(db.String(255), nullable=False)
+    city = db.Column(db.String(100), nullable=False)
+    zipcode = db.Column(db.String(20), nullable=False)
+    order_details = db.Column(JSON, nullable=False)
+    status = db.Column(db.String(50), nullable=False, default='pending')
+    total_amount = db.Column(db.Integer, nullable=False)  # in cents
+    stripe_payment_intent_id = db.Column(db.String(100), unique=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'email': self.email,
+            'name': self.name,
+            'address': self.address,
+            'city': self.city,
+            'zipcode': self.zipcode,
+            'order_details': self.order_details,
+            'status': self.status,
+            'total_amount': self.total_amount,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
+        }
+
 @app.route('/register', methods=['POST'])
 def register():
     data = request.json
@@ -162,10 +210,10 @@ def purchase_switches():
             if not switch:
                 return jsonify({"error": f"Switch {switch_name} not found"}), 404
             
-            if switch.quantity < quantity:
-                return jsonify({"error": f"Not enough {switch_name} switches. Available: {switch.quantity}"}), 400
+            if switch.available < quantity:
+                return jsonify({"error": f"Not enough {switch_name} switches. Available: {switch.available}"}), 400
             
-            switch.quantity -= quantity
+            switch.available -= quantity
 
         db.session.commit()
         return jsonify({"message": "Purchase successful"}), 200
@@ -189,9 +237,12 @@ def add_item_to_cart(current_user):
 
     tester = {
         'id': str(uuid.uuid4()),
+        'name': data['name'], 
         'size': data['size'],
         'keycaps': data['keycaps'],
-        'switches': data['switches']
+        'switches': data['switches'],
+        'price': data['price'],  
+        'quantity': data['quantity']  
     }
     cart.cart_data.append(tester)
     
@@ -248,6 +299,95 @@ def get_user_cart_count(current_user):
     cart = Cart.query.filter_by(user_id=current_user.id).first()
     count = len(cart.cart_data) if cart and cart.cart_data else 0
     return jsonify({'cart_count': count}), 200
+
+@app.route('/create-payment-intent', methods=['POST'])
+@token_required
+def create_payment_intent(current_user):
+    try:
+        data = request.json
+        cart_data = data.get('cart_data')
+        
+        # Calculate the total amount
+        total_amount = sum(item['price'] * item['quantity'] for item in cart_data)
+        
+        # Create a new order
+        order = Order(
+            user_id=current_user.id,
+            email=data['email'],
+            name=data['name'],
+            address=data['address'],
+            city=data['city'],
+            zipcode=data['zipcode'],
+            order_details=cart_data,
+            total_amount=total_amount
+        )
+        db.session.add(order)
+        db.session.commit()
+
+        # Create a PaymentIntent with the order amount and currency
+        intent = stripe.PaymentIntent.create(
+            amount=total_amount,
+            currency='usd',
+            metadata={'order_id': order.id}
+        )
+        
+        # Update the order with the PaymentIntent ID
+        order.stripe_payment_intent_id = intent.id
+        db.session.commit()
+
+        return jsonify({
+            'clientSecret': intent.client_secret,
+            'publishableKey': os.getenv('STRIPE_PUBLISHABLE_KEY')
+        })
+
+    except Exception as e:
+        return jsonify(error=str(e)), 400
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    event = None
+    payload = request.data
+    sig_header = request.headers['STRIPE_SIGNATURE']
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, endpoint_secret
+        )
+    except ValueError as e:
+        # Invalid payload
+        raise BadRequest('Invalid payload')
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        raise BadRequest('Invalid signature')
+
+    # Handle the event
+    if event['type'] == 'payment_intent.succeeded':
+        payment_intent = event['data']['object']
+        order_id = payment_intent['metadata']['order_id']
+        
+        # Update the order status
+        order = Order.query.get(order_id)
+        if order:
+            order.status = 'paid'
+            db.session.commit()
+    
+    elif event['type'] == 'payment_intent.payment_failed':
+        payment_intent = event['data']['object']
+        order_id = payment_intent['metadata']['order_id']
+        
+        # Update the order status
+        order = Order.query.get(order_id)
+        if order:
+            order.status = 'failed'
+            db.session.commit()
+
+    # Add more event types as needed
+
+    return jsonify(success=True)
+
+@app.route('/api/hello', methods=['GET'])
+def hello():
+    return jsonify({'message': 'Hello, World!'}), 200
 
 if __name__ == '__main__':
     with app.app_context():

@@ -2,3 +2,8 @@
 /backend/venv
 /backend/__pycache__
 /.vscode
+backend/.env
+/frontend/img
+frontend/src/.env
+backend/test_data.py
+backend/test_data.py

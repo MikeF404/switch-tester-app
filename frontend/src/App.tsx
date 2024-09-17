@@ -1,16 +1,5 @@
-import { Button } from "@/components/ui/button";
+
 import { Outlet } from "react-router-dom";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
-import { Input } from "@/components/ui/input";
-
 import Header from "./components/Header";
 import { Toaster } from "sonner";
 
@@ -21,11 +10,16 @@ export function App() {
   return (
     <div className="flex justify-center">
       <div className="flex min-h-screen max-w-[1480px] w-full flex-col">
-        <Header />
-        <Outlet />
-        <Toaster richColors/>
+        <div className="fixed top-0 left-0 right-0 z-50">
+          <Header />
+        </div>
+        <div className="mt-16 flex-grow overflow-auto">
+          <Outlet />
+        </div>
+        <Toaster richColors expand={false} duration={2000} closeButton={true} />
       </div>
     </div>
   );
 }
+
 export default App;

@@ -10,6 +10,7 @@ import {
 
 interface Switch {
   id: number;
+  brand: string;
   name: string;
   type: string;
   force: string;
@@ -31,14 +32,14 @@ const ProductCard: React.FC<SwitchCardProps> = ({
 }) => {
   return (
     <Card
-      className={`  w-full h-fit rounded-xl relative pb-16 shadow-lg ${
+      className={`  w-full rounded-xl relative pb-14 shadow-lg ${
         quantity > 0 ? "border-black  " : ""
       } transition-all duration-300`}
     >
       <CardHeader className="p-0">
         <div className="aspect-square relative">
           <img
-            src={product.image}
+            src={`../../img/${product.image}`}
             alt={product.name}
             className={`w-full h-full object-cover rounded-t-xl
             }`}
@@ -46,7 +47,7 @@ const ProductCard: React.FC<SwitchCardProps> = ({
         </div>
       </CardHeader>
       <CardContent className="p-4">
-        <h2 className="text-lg font-semibold">{product.name}</h2>
+        <h2 className=" font-semibold">{product.name}</h2>
       </CardContent>
       <CardFooter className="flex mt-auto absolute bottom-0 left-0 right-0 ">
         <p className="text-sm text-gray-600 w-full">{product.type + " " + product.force}</p>

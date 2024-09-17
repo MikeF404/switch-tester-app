@@ -1,63 +1,33 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React from "react";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Minus, Trash } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
 import { useNavigate } from "react-router-dom";
 
-
-interface CartItem {
-  id: string; 
-  size: number;
-  keycaps: string;
-  switches: Array<{ id: number; name: string; quantity: number }>;
-}
-
 const CartPage: React.FC = () => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const { updateCartCount, removeFromCart } = useCart();
-  const ITEM_PRICE = 9.99; //TODO: get from backend
+  const { cartItems, removeFromCart, updateCart } = useCart();
   const navigate = useNavigate();
   
-  const fetchCart = async () => {
-    try {
-      const response = await fetch("http://127.0.0.1:5000/api/cart", {
-        headers: {
-          Authorization: localStorage.getItem("token") || "",
-        },
-      });
-      if (!response.ok) throw new Error("Failed to fetch cart");
-      const data = await response.json();
-      setCartItems(data.cart_data);
-      updateCartCount();
-    } catch (error) {
-      console.error("Error fetching cart:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchCart();
-  }, [updateCartCount]);
-
   const handleRemoveItem = async (itemId: string) => {
     try {
       await removeFromCart(itemId);
-      await fetchCart(); // Refetch the cart after removing an item
+      await updateCart(); // Refetch the cart after removing an item
     } catch (error) {
       console.error("Error removing item:", error);
     }
   };
 
+  const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 h-[calc(100vh-64px)]">
       <Table>
         <TableHeader>
           <TableRow>
@@ -74,11 +44,10 @@ const CartPage: React.FC = () => {
                 <div className="flex flex-col items-center">
                   <img
                     src="https://www.thockking.com/cdn/shop/products/keyboard-mechanical-switch-switches-tester-fidget-desk-toy-4_900x.jpg?v=1657354186"
-                    alt="Custom Switch Tester"
+                    alt={item.name}
                     className={"w-60 h-40 object-cover self-start rounded-t-xl"}
                   />
-                  
-                  <span className="mt-2">Custom Switch Tester</span>
+                  <span className="mt-2">{item.name}</span>
                 </div>
               </TableCell>
               <TableCell>
@@ -96,7 +65,7 @@ const CartPage: React.FC = () => {
                   </ul>
                 </div>
               </TableCell>
-              <TableCell>${ITEM_PRICE.toFixed(2)}</TableCell>
+              <TableCell>${item.price.toFixed(2)}</TableCell>
               <TableCell>
                 <Button
                   variant="destructive"
@@ -111,13 +80,13 @@ const CartPage: React.FC = () => {
       </Table>
       <div className="mt-4 flex justify-between items-center">
         <div className="text-xl font-bold">
-          Total: ${(ITEM_PRICE * cartItems.length).toFixed(2)}
+          Total: ${total.toFixed(2)}
         </div>
         <div className="space-x-4">
           <Button variant="outline" onClick={() => navigate("/shop")}>
             Continue Shopping
           </Button>
-          <Button>Purchase</Button>
+          <Button onClick={() => navigate("/checkout")}>Purchase</Button>
         </div>
       </div>
     </div>

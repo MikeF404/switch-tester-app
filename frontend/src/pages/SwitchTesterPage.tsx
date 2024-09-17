@@ -81,9 +81,9 @@ const SwitchTesterPage: React.FC = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-64px)] flex flex-col lg:flex-row">
+    <div className="flex flex-col lg:flex-row">
       {/* Tester Information Panel */}
-      <div className="w-full lg:w-1/3 p-4 lg:p-8">
+      <div className="w-full lg:w-1/3 p-4 lg:p-6">
         <Card>
           <CardHeader>
             <CardTitle>Tester Information</CardTitle>
