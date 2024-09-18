@@ -9,6 +9,7 @@ interface Switch {
   type: string;
   force: string;
   image: string;
+  brand: string;
 }
 
 interface SwitchSelectListProps {
@@ -65,7 +66,7 @@ const SwitchSelectList: React.FC<SwitchSelectListProps> = ({
         Select Switches ({totalSelected}/{switchLimit})
       </CardTitle>
       <CardContent className="w-full lg:px-6 pb-6 pt-2 overflow-y-auto">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {sortedSwitches.map((switch_item) => (
             <ProductCard
               key={switch_item.id}

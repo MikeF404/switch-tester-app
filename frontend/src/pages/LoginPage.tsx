@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { validateEmail, validatePassword } from '@/utils/validate';
+import { sanitizeInput } from '@/utils/sanitize';
 
 export const description =
   "A simple login form with email and password. The submit button says 'Sign in'.";
@@ -27,13 +29,26 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const sanitizedEmail = sanitizeInput(email);
+    const sanitizedPassword = sanitizeInput(password);
+
+    if (!validateEmail(sanitizedEmail)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    if (!validatePassword(sanitizedPassword)) {
+      toast.error("Password must be at least 8 characters long and contain uppercase, lowercase, and numbers");
+      return;
+    }
+
     try {
       const response = await fetch(`http://127.0.0.1:5000/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: sanitizedEmail, password: sanitizedPassword }),
       });
       if (!response.ok) {
         if (response.status === 401) {

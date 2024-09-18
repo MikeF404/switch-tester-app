@@ -13,7 +13,7 @@ interface CartItem {
 interface CartContextType {
   cartCount: number;
   cartItems: CartItem[];
-  addToCart: (tester: any) => Promise<void>;
+  addToCart: (tester: any) => Promise<string>;
   removeFromCart: (itemId: string) => Promise<void>;
   updateCartCount: () => Promise<void>;
   updateCart: () => Promise<void>;
@@ -88,7 +88,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const addToCart = async (tester: any) => {
+  const addToCart = async (cartItem: CartItem) => {
     try {
       const token = getToken();
       if (!token) {
@@ -102,18 +102,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
           "Content-Type": "application/json",
           Authorization: token,
         },
-        body: JSON.stringify(tester),
+        body: JSON.stringify(cartItem),
       });
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Failed to add to cart:", errorData);
         if (response.status === 401) {
           console.error("Unauthorized. Redirecting to login...");
-          // Implement your logout/redirect logic here
+          // Implement logout/redirect logic here
         }
         throw new Error("Failed to add to cart");
       }
-      await updateCart();
+      const data = await response.json();
+      setCartCount(data.cart_count);
+      return data.message;
     } catch (error) {
       console.error("Error adding to cart:", error);
       throw error;

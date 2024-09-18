@@ -48,15 +48,19 @@ const SwitchTesterPage: React.FC = () => {
       );
     } else {
       try {
-        await addToCart({
+        const message: string = await addToCart({
+          id: "", // This will be generated on the backend
+          name: "Custom Switch Tester",
           size: parseInt(switchCount),
           keycaps: keycapType,
           switches: Object.entries(selectedSwitches).map(([id, quantity]) => ({
             id: parseInt(id),
             quantity,
           })),
+          price: 0, // Price will be calculated on the backend
+          quantity: 1,
         });
-        toast.success("Item added to the Cart", {
+        toast.success(message, {
           description: `Items in the Cart: ${cartCount}`,
           action: {
             label: "Go to Cart",
@@ -74,16 +78,20 @@ const SwitchTesterPage: React.FC = () => {
   };
 
   const handleDecrementSwitch = (id: number) => {
-    setSelectedSwitches((prev) => ({
-      ...prev,
-      [id]: Math.max(0, (prev[id] || 0) - 1),
-    }));
+    setSelectedSwitches((prev) => {
+      const newQuantity = Math.max(0, (prev[id] || 0) - 1);
+      if (newQuantity === 0) {
+        const { [id]: _, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [id]: newQuantity };
+    });
   };
 
   return (
     <div className="flex flex-col lg:flex-row">
       {/* Tester Information Panel */}
-      <div className="w-full lg:w-1/3 p-4 lg:p-6">
+      <div className="w-full lg:w-1/3 p-6">
         <Card>
           <CardHeader>
             <CardTitle>Tester Information</CardTitle>
@@ -116,7 +124,7 @@ const SwitchTesterPage: React.FC = () => {
         </Card>
       </div>
       {/* Scrollable Switch Grid Panel */}
-      <div className="w-full p-4 lg: pt-8">
+      <div className="w-full p-4 lg: pt-6">
         <SwitchSelectList
           selectedSwitches={selectedSwitches}
           onIncrementSwitch={handleIncrementSwitch}
