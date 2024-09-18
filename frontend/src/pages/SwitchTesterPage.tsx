@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Toaster, toast } from "sonner";
@@ -9,6 +9,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Loader2 } from "lucide-react"; // Import the Loader2 icon from lucide-react
 
 import SwitchTesterPricing from "@/components/SwitchTesterPricing";
 import SwitchSelectList from "@/components/SwitchSelectList";
@@ -25,10 +26,11 @@ const SwitchTesterPage: React.FC = () => {
     "none" | "transparent" | "random"
   >("none");
   const { addToCart, cartCount } = useCart();
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const totalSelectedSwitches = Object.values(selectedSwitches).reduce(
     (a, b) => a + b,
-    0
+     0
   );
   const isOverLimit = totalSelectedSwitches > parseInt(switchCount);
 
@@ -39,7 +41,7 @@ const SwitchTesterPage: React.FC = () => {
     navigate(path);
   };
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = useCallback(async () => {
     if (isOverLimit) {
       toast.error(`Please select exactly ${switchCount} switches.`);
     } else if (totalSelectedSwitches < parseInt(switchCount)) {
@@ -47,6 +49,7 @@ const SwitchTesterPage: React.FC = () => {
         `Please select ${switchCount} switches. You've only selected ${totalSelectedSwitches}.`
       );
     } else {
+      setIsAddingToCart(true);
       try {
         const message: string = await addToCart({
           id: "", // This will be generated on the backend
@@ -61,7 +64,7 @@ const SwitchTesterPage: React.FC = () => {
           quantity: 1,
         });
         toast.success(message, {
-          description: `Items in the Cart: ${cartCount}`,
+          duration: 5000,
           action: {
             label: "Go to Cart",
             onClick: () => routeChange(),
@@ -69,9 +72,11 @@ const SwitchTesterPage: React.FC = () => {
         });
       } catch (error) {
         toast.error("Failed to add to cart. Please try again.");
+      } finally {
+        setTimeout(() => setIsAddingToCart(false), 1000);
       }
     }
-  };
+  }, [isOverLimit, switchCount, totalSelectedSwitches, addToCart]);
 
   const handleIncrementSwitch = (id: number) => {
     setSelectedSwitches((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
@@ -114,10 +119,19 @@ const SwitchTesterPage: React.FC = () => {
                 className="w-full"
                 onClick={handleAddToCart}
                 disabled={
-                  isOverLimit || totalSelectedSwitches < parseInt(switchCount)
+                  isAddingToCart ||
+                  isOverLimit ||
+                  totalSelectedSwitches < parseInt(switchCount)
                 }
               >
-                Add to Cart
+                {isAddingToCart ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Adding...
+                  </>
+                ) : (
+                  "Add to Cart"
+                )}
               </Button>
             </div>
           </CardContent>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Trash, Minus, Plus } from "lucide-react";
+import { Trash, Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -84,9 +84,9 @@ const ProductCard: React.FC<SwitchCardProps> = ({
                 }
               >
                 {quantity === 1 ? (
-                  <Trash className="h-4 w-4" />
+                  <Trash2 className="h-4 w-4" color="#cc0000" />
                 ) : (
-                  <Minus className="h-4 w-4" />
+                  <Minus className="h-4 w-4" strokeWidth={3.5} />
                 )}
               </Button>
               <span className="min-w-[1rem] text-center">{quantity}</span>
@@ -96,7 +96,7 @@ const ProductCard: React.FC<SwitchCardProps> = ({
                 onClick={() => onIncrement(product.id)}
                 aria-label="Increase quantity"
               >
-                <Plus className="h-4 w-4" />
+                <Plus strokeWidth={3.5} className="h-4 w-4" />
               </Button>
             </div>
           )}

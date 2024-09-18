@@ -29,30 +29,30 @@ const SwitchSelectList: React.FC<SwitchSelectListProps> = ({
 }) => {
   const [switches, setSwitches] = useState<Switch[]>([]);
 
-
-    useEffect(() => {
+  useEffect(() => {
     const fetchSwitches = async () => {
       try {
         const response = await fetch("http://127.0.0.1:5000/switches", {
-          method: "GET",
+          method: 'GET',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
         });
-        if (!response.ok){
-          throw new Error('HTTP error when loading switches '+ response.status);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
         setSwitches(data);
       } catch (error) {
-        toast.error("Error when loading available switches :(");
-        console.error('Error fetching switches:', error);
+        console.error("Error fetching switches:", error);
       }
     };
 
     fetchSwitches();
   }, []);
-    const sortedSwitches = [...switches].sort(
+
+  const sortedSwitches = [...switches].sort(
     (a, b) => (selectedSwitches[b.id] || 0) - (selectedSwitches[a.id] || 0)
   );
 

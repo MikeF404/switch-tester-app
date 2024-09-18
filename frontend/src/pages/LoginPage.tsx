@@ -29,39 +29,13 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const sanitizedEmail = sanitizeInput(email);
-    const sanitizedPassword = sanitizeInput(password);
-
-    if (!validateEmail(sanitizedEmail)) {
-      toast.error("Please enter a valid email address");
-      return;
-    }
-
-    if (!validatePassword(sanitizedPassword)) {
-      toast.error("Password must be at least 8 characters long and contain uppercase, lowercase, and numbers");
-      return;
-    }
-
     try {
-      const response = await fetch(`http://127.0.0.1:5000/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: sanitizedEmail, password: sanitizedPassword }),
-      });
-      if (!response.ok) {
-        if (response.status === 401) {
-          toast.error("Wrong login or password! Please try again");
-        }
-        throw new Error("HTTP error " + response.status);
-      }
-      const data = await response.json();
-      login(email, data.token);
+      console.log("Submitting login with email:", email);
+      await login(email, password);
       navigate("/");
     } catch (error) {
-      setPassword("");
-      console.error("Authentication error:", error);
+      console.error("Login submission error:", error);
+      toast.error("Login failed. Please try again.");
     }
   };
 

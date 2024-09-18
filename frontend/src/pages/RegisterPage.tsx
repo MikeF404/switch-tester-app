@@ -14,6 +14,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { validateEmail, validatePassword } from "@/utils/validate";
 import { sanitizeInput } from "@/utils/sanitize";
+import { useAuth } from "@/components/AuthProvider";
 
 export const description =
   "A simple login form with email and password. The submit button says 'Sign in'.";
@@ -22,6 +23,7 @@ const RegisterPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   let navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -39,12 +41,13 @@ const RegisterPage: React.FC = () => {
     }
 
     try {
+      const userId = localStorage.getItem("userId");
       const response = await fetch(`http://127.0.0.1:5000/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: sanitizedEmail, password: sanitizedPassword }),
+        body: JSON.stringify({ email: sanitizedEmail, password: sanitizedPassword, user_id: userId }),
       });
       if (!response.ok) {
         if (response.status === 400) {
@@ -60,11 +63,12 @@ const RegisterPage: React.FC = () => {
         }
         throw new Error("HTTP error " + response.status);
       }
-      const data = await response.json();
-
-      localStorage.setItem("token", data.token);
-
-      navigate("/login");
+      if (response.ok) {
+        toast.success("Account created successfully! Please log in.");
+        navigate("/login");
+      } else {
+        toast.error("Failed to create account. Please try again.");
+      }
     } catch (error: any) {
       console.error("Authentication error:", error.message);
     }

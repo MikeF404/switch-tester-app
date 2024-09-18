@@ -1,6 +1,6 @@
 import React from "react";
 import { CircleUser, Menu, Package2, Search, ShoppingCart } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,9 +15,28 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "./AuthProvider";
 import { log } from "console";
 import { ModeToggle } from "./ModeToggle";
+import { useCart } from "./CartProvider";
+import { useState, useEffect } from "react";
 
 const Header: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
+  const { cartItems } = useCart();
+  const [animate, setAnimate] = useState(false);
+
+  const totalItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+
+  useEffect(() => {
+    if (totalItemCount > 0) {
+      setAnimate(true);
+      const timer = setTimeout(() => setAnimate(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [totalItemCount]);
+
+  const handleLogout = () => {
+    logout(() => navigate("/login"));
+  };
 
   return (
     <header className="sticky top-0 flex h-16 items-center justify-center gap-4 border-b bg-background px-4 md:px-6">
@@ -121,11 +140,20 @@ const Header: React.FC = () => {
             </div>
           </form>
           <ModeToggle />
-          <Link to="/cart">
+          <Link to="/cart" className="relative">
             <Button variant="secondary" size="icon" className="rounded-full">
               <ShoppingCart className="h-5 w-5" />
               <span className="sr-only">Open Cart</span>
             </Button>
+            {totalItemCount > 0 && (
+              <span
+                className={`absolute -bottom-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center ${
+                  animate ? 'animate-ping' : ''
+                }`}
+              >
+                {totalItemCount}
+              </span>
+            )}
           </Link>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -136,28 +164,27 @@ const Header: React.FC = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Profile</DropdownMenuLabel>
-              {localStorage.getItem("userEmail") ? (
-                <p className="text-muted-foreground text-sm mx-2">
-                  {user?.email}
-                </p>
+              {isAuthenticated && user ? (
+                <>
+                  <p className="text-muted-foreground text-sm mx-2">
+                    {user.email}
+                  </p>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>Settings</DropdownMenuItem>
+                  <DropdownMenuItem>Support</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onSelect={handleLogout}>Logout</DropdownMenuItem>
+                </>
               ) : (
-                ""
+                <>
+                  <DropdownMenuItem onSelect={() => navigate("/login")}>
+                    Login
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => navigate("/register")}>
+                    Register
+                  </DropdownMenuItem>
+                </>
               )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <Link
-                to="/login"
-                className="text-muted-foreground hover:text-foreground"
-                onClick={logout}
-              >
-                {isAuthenticated && user ? (
-                  <DropdownMenuItem>Logout</DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem>Sign in</DropdownMenuItem>
-                )}
-              </Link>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

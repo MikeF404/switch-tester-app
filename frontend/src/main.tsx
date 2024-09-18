@@ -15,12 +15,13 @@ import { AuthProvider } from "./components/AuthProvider";
 import { CartProvider } from "./components/CartProvider";
 import { ThemeProvider } from "./providers/ThemeProvider";
 import CheckoutPage from "./pages/CheckoutPage";
+import { Car } from "lucide-react";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <ThemeProvider>
-      <AuthProvider>
-        <CartProvider>
+      <CartProvider>
+        <AuthProvider>
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<App />}>
@@ -35,8 +36,8 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
               </Route>
             </Routes>
           </BrowserRouter>
-        </CartProvider>
-      </AuthProvider>
+        </AuthProvider>
+      </CartProvider>
     </ThemeProvider>
   </React.StrictMode>
 );
