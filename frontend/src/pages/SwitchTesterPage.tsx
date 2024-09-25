@@ -30,7 +30,7 @@ const SwitchTesterPage: React.FC = () => {
 
   const totalSelectedSwitches = Object.values(selectedSwitches).reduce(
     (a, b) => a + b,
-     0
+    0
   );
   const isOverLimit = totalSelectedSwitches > parseInt(switchCount);
 
@@ -64,7 +64,7 @@ const SwitchTesterPage: React.FC = () => {
           quantity: 1,
         });
         toast.success(message, {
-          duration: 5000,
+          duration: 5001,
           action: {
             label: "Go to Cart",
             onClick: () => routeChange(),
@@ -138,7 +138,7 @@ const SwitchTesterPage: React.FC = () => {
         </Card>
       </div>
       {/* Scrollable Switch Grid Panel */}
-      <div className="w-full p-4 lg: pt-6">
+      <div className="w-full p-0 lg:p-4 lg:pt-6 ">
         <SwitchSelectList
           selectedSwitches={selectedSwitches}
           onIncrementSwitch={handleIncrementSwitch}

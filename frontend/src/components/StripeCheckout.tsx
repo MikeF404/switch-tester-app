@@ -58,7 +58,7 @@ const StripeCheckout = ({ clientSecret }: { clientSecret: string }) => {
   useEffect(() => {
     const fetchPublishableKey = async () => {
       const response = await fetch(
-        "http://127.0.0.1:5000/create-payment-intent",
+        "http://10.0.0.216:5001/create-payment-intent",
         {
           method: "POST",
           headers: {

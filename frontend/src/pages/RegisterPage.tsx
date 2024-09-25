@@ -36,18 +36,24 @@ const RegisterPage: React.FC = () => {
     }
 
     if (!validatePassword(sanitizedPassword)) {
-      toast.error("Password must be at least 8 characters long and contain uppercase, lowercase, and numbers");
+      toast.error(
+        "Password must be at least 8 characters long and contain uppercase, lowercase, and numbers"
+      );
       return;
     }
 
     try {
       const userId = localStorage.getItem("userId");
-      const response = await fetch(`http://127.0.0.1:5000/register`, {
+      const response = await fetch(`http://10.0.0.216:5001/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: sanitizedEmail, password: sanitizedPassword, user_id: userId }),
+        body: JSON.stringify({
+          email: sanitizedEmail,
+          password: sanitizedPassword,
+          user_id: userId,
+        }),
       });
       if (!response.ok) {
         if (response.status === 400) {

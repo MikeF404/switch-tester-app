@@ -35,7 +35,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
-CORS(app, resources={r"/*": {"origins": ["http://localhost:5000", "http://127.0.0.1:5173"], "methods": ["GET", "POST", "DELETE", "OPTIONS"], "supports_credentials": True}})
+CORS(app, resources={r"/*": {"origins": ["http://localhost:5001", "http://10.0.0.216:5173", "http://10.0.0.216:5173", "http://localhost:5173"], "methods": ["GET", "POST", "DELETE", "OPTIONS"], "supports_credentials": True}})
 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 # endpoint_secret = os.getenv('STRIPE_WEBHOOK_SECRET')
@@ -487,5 +487,5 @@ def create_guest_user():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)
 

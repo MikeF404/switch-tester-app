@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useCart } from './CartProvider';
+import { useCart } from "./CartProvider";
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -31,7 +31,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const userId = localStorage.getItem("userId");
     const email = localStorage.getItem("userEmail");
     if (token && userId) {
-      setAuthState({ isAuthenticated: true, user: { id: userId, email }, token });
+      setAuthState({
+        isAuthenticated: true,
+        user: { id: userId, email },
+        token,
+      });
     } else {
       createGuestUser();
     }
@@ -40,13 +44,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const login = async (email: string, password: string) => {
     try {
       console.log("Attempting login with email:", email);
-      const response = await fetch("http://127.0.0.1:5000/api/login", {
+      const response = await fetch("http://10.0.0.216:5001/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -59,7 +63,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       console.log("Login successful, received data:", data);
       localStorage.setItem("token", data.token);
       localStorage.setItem("userEmail", email);
-      setAuthState({ isAuthenticated: true, user: { id: data.user_id, email }, token: data.token });
+      setAuthState({
+        isAuthenticated: true,
+        user: { id: data.user_id, email },
+        token: data.token,
+      });
       await updateCart(); // Update cart after successful login
     } catch (error) {
       console.error("Login error:", error);
@@ -71,13 +79,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.removeItem("token");
     localStorage.removeItem("userEmail");
     setAuthState({ isAuthenticated: false, user: null, token: null });
-    clearCart(); 
-    callback(); 
+    clearCart();
+    callback();
   };
 
   const createGuestUser = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:5000/create-guest-user", {
+      const response = await fetch("http://10.0.0.216:5001/create-guest-user", {
         method: "POST",
       });
       if (!response.ok) {
@@ -97,7 +105,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <AuthContext.Provider value={{ ...authState, login, logout, createGuestUser }}>
+    <AuthContext.Provider
+      value={{ ...authState, login, logout, createGuestUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

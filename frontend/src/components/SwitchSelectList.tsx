@@ -20,23 +20,23 @@ interface SwitchSelectListProps {
   switchLimit: number;
 }
 
-const SwitchSelectList: React.FC<SwitchSelectListProps> = ({ 
-  selectedSwitches, 
-  onIncrementSwitch, 
+const SwitchSelectList: React.FC<SwitchSelectListProps> = ({
+  selectedSwitches,
+  onIncrementSwitch,
   onDecrementSwitch,
   totalSelected,
-  switchLimit
+  switchLimit,
 }) => {
   const [switches, setSwitches] = useState<Switch[]>([]);
 
   useEffect(() => {
     const fetchSwitches = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:5000/switches", {
-          method: 'GET',
+        const response = await fetch("http://10.0.0.216:5001/switches", {
+          method: "GET",
           headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
+            "Content-Type": "application/json",
+            Accept: "application/json",
           },
         });
         if (!response.ok) {
@@ -65,7 +65,7 @@ const SwitchSelectList: React.FC<SwitchSelectListProps> = ({
       >
         Select Switches ({totalSelected}/{switchLimit})
       </CardTitle>
-      <CardContent className="w-full lg:px-6 pb-6 pt-2 overflow-y-auto">
+      <CardContent className="w-full px-2 lg:px-6 pb-6 pt-2 overflow-y-auto">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {sortedSwitches.map((switch_item) => (
             <ProductCard

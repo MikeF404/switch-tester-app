@@ -29,12 +29,12 @@ export default function CheckoutPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    setFormData(prev => ({ ...prev, [id]: value }));
+    setFormData((prev) => ({ ...prev, [id]: value }));
   };
 
   const handleZipCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setZipCode(e.target.value);
-    setFormData(prev => ({ ...prev, zipCode: e.target.value }));
+    setFormData((prev) => ({ ...prev, zipCode: e.target.value }));
     if (e.target.value.length === 5) {
       // Simulating API call to update shipping cost
       setTimeout(() => {
@@ -46,37 +46,51 @@ export default function CheckoutPage() {
   useEffect(() => {
     const createPaymentIntent = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:5000/create-payment-intent', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': localStorage.getItem('token') || '',
-          },
-          body: JSON.stringify({
-            cart_data: cartItems,
-            email: formData.email,
-            name: `${formData.firstName} ${formData.lastName}`,
-            address: formData.address,
-            city: formData.city,
-            zipcode: formData.zipCode,
-          }),
-        });
+        const response = await fetch(
+          "http://10.0.0.216:5001/create-payment-intent",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: localStorage.getItem("token") || "",
+            },
+            body: JSON.stringify({
+              cart_data: cartItems,
+              email: formData.email,
+              name: `${formData.firstName} ${formData.lastName}`,
+              address: formData.address,
+              city: formData.city,
+              zipcode: formData.zipCode,
+            }),
+          }
+        );
         if (!response.ok) {
-          throw new Error('Failed to create payment intent');
+          throw new Error("Failed to create payment intent");
         }
         const { clientSecret } = await response.json();
         setClientSecret(clientSecret);
       } catch (error) {
-        console.error('Error creating payment intent:', error);
+        console.error("Error creating payment intent:", error);
       }
     };
 
-    if (agreedToTOS && formData.email && formData.firstName && formData.lastName && formData.address && formData.city && formData.zipCode) {
+    if (
+      agreedToTOS &&
+      formData.email &&
+      formData.firstName &&
+      formData.lastName &&
+      formData.address &&
+      formData.city &&
+      formData.zipCode
+    ) {
       createPaymentIntent();
     }
   }, [agreedToTOS, formData, cartItems]);
 
-  const subtotal = cartItems.reduce((total: number, item) => total + item.price * item.quantity, 0);
+  const subtotal = cartItems.reduce(
+    (total: number, item) => total + item.price * item.quantity,
+    0
+  );
   const estimatedTax = subtotal * 0.1; // Assuming 10% tax rate
   const total = subtotal + shippingCost + estimatedTax;
 
@@ -87,11 +101,19 @@ export default function CheckoutPage() {
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
+              <h2 className="text-xl font-semibold mb-4">
+                Contact Information
+              </h2>
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="email">Email (required)</Label>
-                  <Input id="email" type="email" required value={formData.email} onChange={handleInputChange} />
+                  <Input
+                    id="email"
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={handleInputChange}
+                  />
                 </div>
               </div>
             </CardContent>
@@ -99,34 +121,62 @@ export default function CheckoutPage() {
 
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Shipping Information</h2>
+              <h2 className="text-xl font-semibold mb-4">
+                Shipping Information
+              </h2>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="firstName">First Name</Label>
-                    <Input id="firstName" value={formData.firstName} onChange={handleInputChange} />
+                    <Input
+                      id="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="lastName">Last Name</Label>
-                    <Input id="lastName" value={formData.lastName} onChange={handleInputChange} />
+                    <Input
+                      id="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                    />
                   </div>
                 </div>
                 <div>
                   <Label htmlFor="address">Address</Label>
-                  <Input id="address" value={formData.address} onChange={handleInputChange} />
+                  <Input
+                    id="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                  />
                 </div>
                 <div>
-                  <Label htmlFor="apartment">Apartment, suite, etc. (optional)</Label>
-                  <Input id="apartment" value={formData.apartment} onChange={handleInputChange} />
+                  <Label htmlFor="apartment">
+                    Apartment, suite, etc. (optional)
+                  </Label>
+                  <Input
+                    id="apartment"
+                    value={formData.apartment}
+                    onChange={handleInputChange}
+                  />
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <Label htmlFor="city">City</Label>
-                    <Input id="city" value={formData.city} onChange={handleInputChange} />
+                    <Input
+                      id="city"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="state">State</Label>
-                    <Input id="state" value={formData.state} onChange={handleInputChange} />
+                    <Input
+                      id="state"
+                      value={formData.state}
+                      onChange={handleInputChange}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="zipCode">ZIP Code</Label>
@@ -141,14 +191,14 @@ export default function CheckoutPage() {
             </CardContent>
           </Card>
 
-          {clientSecret && (
-            <Card>
-              <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Payment Information</h2>
-                <StripeCheckout clientSecret={clientSecret} />
-              </CardContent>
-            </Card>
-          )}
+          <Card>
+            <CardContent className="p-6">
+              <h2 className="text-xl font-semibold mb-4">
+                Payment Information
+              </h2>
+              {clientSecret && <StripeCheckout clientSecret={clientSecret} />}
+            </CardContent>
+          </Card>
         </div>
 
         <div className="mt-6 lg:mt-0">
@@ -158,7 +208,9 @@ export default function CheckoutPage() {
               <div className="space-y-4">
                 {cartItems.map((item, index: number) => (
                   <div key={index} className="flex justify-between">
-                    <span>{item.quantity}x {item.name}</span>
+                    <span>
+                      {item.quantity}x {item.name}
+                    </span>
                     <span>${(item.price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
@@ -214,9 +266,7 @@ export default function CheckoutPage() {
               <Checkbox
                 id="terms"
                 checked={agreedToTOS}
-                onCheckedChange={(checked: boolean) =>
-                  setAgreedToTOS(checked)
-                }
+                onCheckedChange={(checked: boolean) => setAgreedToTOS(checked)}
               />
               <label
                 htmlFor="terms"

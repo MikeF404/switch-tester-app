@@ -1,7 +1,8 @@
 import React from "react";
-import { CircleUser, Menu, Package2, Search, ShoppingCart } from "lucide-react";
+import { CircleUser, Menu, Search, ShoppingCart } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import Logo from "./Logo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,20 +47,14 @@ const Header: React.FC = () => {
             to="/"
             className="flex items-center gap-2 text-lg font-semibold md:text-base"
           >
-            <Package2 className="h-6 w-6" />
-            <span className="sr-only">Acme Inc</span>
+            <Logo />
+            <span className="sr-only">KBLab</span>
           </Link>
           <Link
-            to="/home"
+            to="/"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
             Home
-          </Link>
-          <Link
-            to="/contact"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Contact
           </Link>
           <Link
             to="/shop"
@@ -71,13 +66,7 @@ const Header: React.FC = () => {
             to="/"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
-            Customers
-          </Link>
-          <Link
-            to="/"
-            className="text-foreground transition-colors hover:text-foreground"
-          >
-            Settings
+            Contact
           </Link>
         </nav>
         <Sheet>
@@ -97,32 +86,32 @@ const Header: React.FC = () => {
                 to="/"
                 className="flex items-center gap-2 text-lg font-semibold"
               >
-                <Package2 className="h-6 w-6" />
-                <span className="sr-only">Acme Inc</span>
+                <Logo />
+                <span className="sr-only">KBLab</span>
               </Link>
               <Link
                 to="/"
                 className="text-muted-foreground hover:text-foreground"
               >
-                Dashboard
+                Home
               </Link>
               <Link
-                to="/"
+                to="/shop"
                 className="text-muted-foreground hover:text-foreground"
               >
-                Orders
+                Shop
               </Link>
               <Link
-                to="/"
+                to="/contact"
                 className="text-muted-foreground hover:text-foreground"
               >
-                Products
+                Contact
               </Link>
               <Link
-                to="/"
+                to="/cart"
                 className="text-muted-foreground hover:text-foreground"
               >
-                Customers
+                Cart
               </Link>
             </nav>
           </SheetContent>

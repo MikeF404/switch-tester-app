@@ -1,4 +1,10 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from "react";
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  useCallback,
+} from "react";
 
 interface CartItem {
   id: string;
@@ -38,7 +44,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         return;
       }
 
-      const response = await fetch("http://127.0.0.1:5000/api/cart/count", {
+      const response = await fetch("http://10.0.0.216:5001/api/cart/count", {
         headers: {
           Authorization: token,
         },
@@ -67,7 +73,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         return;
       }
 
-      const response = await fetch("http://127.0.0.1:5000/api/cart", {
+      const response = await fetch("http://10.0.0.216:5001/api/cart", {
         headers: {
           Authorization: token,
         },
@@ -78,7 +84,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       const data = await response.json();
-       
+
       if (data.cart_data && Array.isArray(data.cart_data)) {
         setCartItems(data.cart_data);
         setCartCount(data.cart_count || data.cart_data.length);
@@ -94,70 +100,76 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [getToken]);
 
-  const addToCart = useCallback(async (item: CartItem) => {
-    try {
-      const token = getToken();
-      if (!token) {
-        console.error("No token found");
-        throw new Error("No token found");
-      }
-
-      const response = await fetch("http://127.0.0.1:5000/api/cart/add", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token,
-        },
-        body: JSON.stringify(item),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to add to cart:", errorData);
-        if (response.status === 401) {
-          console.error("Unauthorized. Redirecting to login...");
-          // Implement logout/redirect logic here
+  const addToCart = useCallback(
+    async (item: CartItem) => {
+      try {
+        const token = getToken();
+        if (!token) {
+          console.error("No token found");
+          throw new Error("No token found");
         }
-        throw new Error(errorData.message || "Failed to add to cart");
-      }
 
-      const data = await response.json();
-      await updateCart();
-      return data.message;
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-      throw error;
-    }
-  }, [getToken]);
-
-  const removeFromCart = useCallback(async (itemId: string) => {
-    try {
-      const token = getToken();
-      if (!token) {
-        console.error("No token found");
-        return;
-      }
-
-      const response = await fetch(
-        `http://127.0.0.1:5000/api/cart/remove/${itemId}`,
-        {
-          method: "DELETE",
+        const response = await fetch("http://10.0.0.216:5001/api/cart/add", {
+          method: "POST",
           headers: {
+            "Content-Type": "application/json",
             Authorization: token,
           },
+          body: JSON.stringify(item),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Failed to add to cart:", errorData);
+          if (response.status === 401) {
+            console.error("Unauthorized. Redirecting to login...");
+            // Implement logout/redirect logic here
+          }
+          throw new Error(errorData.message || "Failed to add to cart");
         }
-      );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        await updateCart();
+        return data.message;
+      } catch (error) {
+        console.error("Error adding to cart:", error);
+        throw error;
       }
+    },
+    [getToken]
+  );
 
-      await updateCart();
-    } catch (error) {
-      console.error("Error removing from cart:", error);
-      throw error;
-    }
-  }, [getToken]);
+  const removeFromCart = useCallback(
+    async (itemId: string) => {
+      try {
+        const token = getToken();
+        if (!token) {
+          console.error("No token found");
+          return;
+        }
+
+        const response = await fetch(
+          `http://10.0.0.216:5001/api/cart/remove/${itemId}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: token,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        await updateCart();
+      } catch (error) {
+        console.error("Error removing from cart:", error);
+        throw error;
+      }
+    },
+    [getToken]
+  );
 
   const clearCart = useCallback(() => {
     setCartItems([]);
@@ -178,11 +190,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     updateCart();
   }, []);
 
-  return (
-    <CartContext.Provider value={value}>
-      {children}
-    </CartContext.Provider>
-  );
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
 
 export const useCart = () => {
@@ -192,4 +200,3 @@ export const useCart = () => {
   }
   return context;
 };
-

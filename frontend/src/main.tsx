@@ -8,7 +8,7 @@ import Contact from "./pages/Contact";
 import SwitchTester from "./pages/SwitchTesterPage";
 import Cart from "./pages/Cart";
 import "./index.css";
-
+import TOSPage from "./pages/TOSPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import { AuthProvider } from "./components/AuthProvider";
@@ -33,6 +33,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                 <Route path="login" element={<LoginPage />} />
                 <Route path="register" element={<RegisterPage />} />
                 <Route path="checkout" element={<CheckoutPage />} />
+                <Route path="tos" element={<TOSPage />} />
               </Route>
             </Routes>
           </BrowserRouter>
