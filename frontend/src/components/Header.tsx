@@ -13,19 +13,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useAuth } from "./AuthProvider";
+import { useAuth } from "../providers/AuthProvider";
 import { log } from "console";
 import { ModeToggle } from "./ModeToggle";
-import { useCart } from "./CartProvider";
+import { useCart } from "../providers/CartProvider";
 import { useState, useEffect } from "react";
 
 const Header: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth();
+  const { cartItems, clearCart } = useCart();  // Add clearCart here
   const navigate = useNavigate();
-  const { cartItems } = useCart();
   const [animate, setAnimate] = useState(false);
 
-  const totalItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+  const totalItemCount = cartItems.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
 
   useEffect(() => {
     if (totalItemCount > 0) {
@@ -36,7 +39,9 @@ const Header: React.FC = () => {
   }, [totalItemCount]);
 
   const handleLogout = () => {
-    logout(() => navigate("/login"));
+    logout();
+    clearCart();  // Clear the cart when logging out
+    navigate("/login");
   };
 
   return (
@@ -63,7 +68,7 @@ const Header: React.FC = () => {
             Shop
           </Link>
           <Link
-            to="/"
+            to="/contact"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
             Contact
@@ -137,7 +142,7 @@ const Header: React.FC = () => {
             {totalItemCount > 0 && (
               <span
                 className={`absolute -bottom-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center ${
-                  animate ? 'animate-ping' : ''
+                  animate ? "animate-ping" : ""
                 }`}
               >
                 {totalItemCount}
@@ -162,7 +167,9 @@ const Header: React.FC = () => {
                   <DropdownMenuItem>Settings</DropdownMenuItem>
                   <DropdownMenuItem>Support</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onSelect={handleLogout}>Logout</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={handleLogout}>
+                    Logout
+                  </DropdownMenuItem>
                 </>
               ) : (
                 <>

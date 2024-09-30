@@ -26,28 +26,28 @@ const Home: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
                 {
-                  title: "4-Switch Tester",
+                  title: "Custom Switch Tester",
                   description: "Perfect for beginners",
-                  price: "$19.99",
-                  image: "/images/4-switch-tester.png",
+                  price: "Starting at $9.99",
+                  image: "../../../img/tester_nobg_nokeycaps.png",
                   backgroundColor: "#FFE5E5",
-                  link: "/product/4-switch-tester",
+                  link: "/shop/custom-switch-tester",
                 },
                 {
-                  title: "9-Switch Tester",
+                  title: "Ergonomic Layout Tester",
                   description: "Most popular choice",
-                  price: "$39.99",
+                  price: "$5.99",
                   image: "/images/9-switch-tester.png",
                   backgroundColor: "#E5FFE5",
-                  link: "/product/9-switch-tester",
+                  link: "/shop/layout-tester",
                 },
                 {
-                  title: "16-Switch Tester",
+                  title: "Mega Switch Tester",
                   description: "For the enthusiasts",
-                  price: "$69.99",
+                  price: "$29.99",
                   image: "/images/16-switch-tester.png",
                   backgroundColor: "#E5E5FF",
-                  link: "/product/16-switch-tester",
+                  link: "/shop/mega-switch-tester",
                 },
               ].map((product, index) => (
                 <FeaturedItemCard
