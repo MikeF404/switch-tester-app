@@ -1,7 +1,7 @@
 import React from "react";
 import { CircleUser, Menu, Search, ShoppingCart } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { Button } from "../components/ui/button";
 import Logo from "./Logo";
 import {
   DropdownMenu,
@@ -11,8 +11,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Input } from "../components/ui/input";
+import { Sheet, SheetContent, SheetTrigger } from "../components/ui/sheet";
 import { useAuth } from "../providers/AuthProvider";
 import { log } from "console";
 import { ModeToggle } from "./ModeToggle";
@@ -26,7 +26,7 @@ const Header: React.FC = () => {
   const [animate, setAnimate] = useState(false);
 
   const totalItemCount = cartItems.reduce(
-    (total, item) => total + item.quantity,
+    (total: number, item: { quantity: number }) => total + item.quantity,
     0
   );
 
@@ -39,9 +39,10 @@ const Header: React.FC = () => {
   }, [totalItemCount]);
 
   const handleLogout = () => {
-    logout();
-    clearCart();  // Clear the cart when logging out
-    navigate("/login");
+    logout(() => {
+      clearCart();
+      navigate("/login");
+    });
   };
 
   return (

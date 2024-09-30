@@ -13,7 +13,7 @@ import { Loader2 } from "lucide-react"; // Import the Loader2 icon from lucide-r
 
 import SwitchTesterPricing from "@/components/SwitchTesterPricing";
 import SwitchSelectList from "@/components/SwitchSelectList";
-import { useCart } from "@/components/CartProvider";
+import { useCart } from "@/providers/CartProvider";
 
 type SwitchCount = "10" | "15" | "20";
 

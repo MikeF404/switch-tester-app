@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Link, useNavigate } from "react-router-dom";
-import { useCart } from "@/components/CartProvider";
+import { useCart } from "@/providers/CartProvider";
 import StripeCheckout from "@/components/StripeCheckout";
 
 export default function CheckoutPage() {

@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { useCart } from "@/components/CartProvider";
+import { useCart } from "@/providers/CartProvider";
 import { useNavigate } from "react-router-dom";
 
 const CartPage: React.FC = () => {

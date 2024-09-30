@@ -14,7 +14,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { validateEmail, validatePassword } from "@/utils/validate";
 import { sanitizeInput } from "@/utils/sanitize";
-import { useAuth } from "@/components/AuthProvider";
+import { useAuth } from "@/providers/AuthProvider";
 
 export const description =
   "A simple login form with email and password. The submit button says 'Sign in'.";

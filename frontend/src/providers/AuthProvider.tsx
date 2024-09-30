@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useCart } from "./CartProvider";
+
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -10,7 +10,7 @@ interface AuthState {
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<void>;
   logout: (callback: () => void) => void;
-  createGuestUser: () => Promise<void>;
+  createGuestUser: () => Promise<{ user_id: string; token: string } | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,8 +23,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     user: null,
     token: localStorage.getItem("token"),
   }));
-
-  const { updateCart, clearCart } = useCart();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -68,7 +66,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         user: { id: data.user_id, email },
         token: data.token,
       });
-      await updateCart(); // Update cart after successful login
     } catch (error) {
       console.error("Login error:", error);
       throw error;
@@ -79,7 +76,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.removeItem("token");
     localStorage.removeItem("userEmail");
     setAuthState({ isAuthenticated: false, user: null, token: null });
-    clearCart();
     callback();
   };
 
@@ -99,8 +95,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         user: { id: data.user_id, email: null },
         token: data.token,
       });
+      return data;
     } catch (error) {
       console.error("Error creating guest user:", error);
+      return null;
     }
   };
 

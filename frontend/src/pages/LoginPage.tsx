@@ -1,4 +1,4 @@
-import { useAuth } from "@/components/AuthProvider";
+import { useAuth } from "@/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,14 +15,16 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { validateEmail, validatePassword } from '@/utils/validate';
 import { sanitizeInput } from '@/utils/sanitize';
+import { useCart } from "../providers/CartProvider";
 
 export const description =
   "A simple login form with email and password. The submit button says 'Sign in'.";
 
 const LoginPage: React.FC = () => {
-    const { user, login } = useAuth();
+  const { user, login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { updateCart } = useCart();
 
   let navigate = useNavigate();
 
@@ -32,6 +34,7 @@ const LoginPage: React.FC = () => {
     try {
       console.log("Submitting login with email:", email);
       await login(email, password);
+      updateCart();
       navigate("/");
     } catch (error) {
       console.error("Login submission error:", error);

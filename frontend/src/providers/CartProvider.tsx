@@ -5,6 +5,8 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
+import { TokenExpiredDialog } from "../components/TokenExpiredDialog";
+import { useAuth } from "./AuthProvider";
 
 interface CartItem {
   id: string;
@@ -33,8 +35,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartCount, setCartCount] = useState(0);
+  const [isTokenExpiredDialogOpen, setIsTokenExpiredDialogOpen] = useState(false);
+  const { logout } = useAuth();
 
   const getToken = useCallback(() => localStorage.getItem("token"), []);
+
+  const handleTokenExpired = useCallback(() => {
+    setIsTokenExpiredDialogOpen(true);
+  }, []);
 
   const updateCartCount = async () => {
     try {
@@ -53,10 +61,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         const errorData = await response.json();
         console.error("Failed to fetch cart count:", errorData);
         if (response.status === 401) {
-          console.error("Unauthorized. Redirecting to login...");
-          // TODO: redo this section - we don't need to redirect to login
+          handleTokenExpired();
+          return;
         }
-        return;
+        throw new Error(errorData.message || "Failed to fetch cart count");
       }
       const data = await response.json();
       setCartCount(data.cart_count);
@@ -69,7 +77,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const token = getToken();
       if (!token) {
-        console.error("No token found");
+        //console.error("No token found");
         return;
       }
 
@@ -80,6 +88,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          handleTokenExpired();
+          return;
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
@@ -98,7 +110,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       setCartItems([]);
       setCartCount(0);
     }
-  }, [getToken]);
+  }, [getToken, handleTokenExpired]);
 
   const addToCart = useCallback(
     async (item: CartItem) => {
@@ -122,8 +134,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
           const errorData = await response.json();
           console.error("Failed to add to cart:", errorData);
           if (response.status === 401) {
-            console.error("Unauthorized. Redirecting to login...");
-            // Implement logout/redirect logic here
+            handleTokenExpired();
+            return;
           }
           throw new Error(errorData.message || "Failed to add to cart");
         }
@@ -136,7 +148,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         throw error;
       }
     },
-    [getToken]
+    [getToken, handleTokenExpired]
   );
 
   const removeFromCart = useCallback(
@@ -159,6 +171,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         );
 
         if (!response.ok) {
+          if (response.status === 401) {
+            handleTokenExpired();
+            return;
+          }
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
@@ -168,7 +184,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         throw error;
       }
     },
-    [getToken]
+    [getToken, handleTokenExpired]
   );
 
   const clearCart = useCallback(() => {
@@ -190,7 +206,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     updateCart();
   }, []);
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+  return (
+    <CartContext.Provider value={value}>
+      {children}
+      <TokenExpiredDialog
+        isOpen={isTokenExpiredDialogOpen}
+        onClose={() => setIsTokenExpiredDialogOpen(false)}
+      />
+    </CartContext.Provider>
+  );
 };
 
 export const useCart = () => {

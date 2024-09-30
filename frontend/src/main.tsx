@@ -11,31 +11,34 @@ import "./index.css";
 import TOSPage from "./pages/TOSPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import { RootProvider } from "./providers/RootProvider";
 import { ThemeProvider } from "./providers/ThemeProvider";
 import CheckoutPage from "./pages/CheckoutPage";
 import FAQPage from "./pages/FAQPage";
+import { CartProvider } from "./providers/CartProvider";
+import { AuthProvider } from "./providers/AuthProvider";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <ThemeProvider>
       <BrowserRouter>
-        <RootProvider>
-          <Routes>
-            <Route path="/" element={<App />}>
-              <Route index element={<Home />} />
-              <Route path="shop" element={<Shop />} />
-              <Route path="contact" element={<Contact />} />
-              <Route path="shop/switch-tester" element={<SwitchTester />} />
-              <Route path="cart" element={<Cart />} />
-              <Route path="login" element={<LoginPage />} />
-              <Route path="register" element={<RegisterPage />} />
-              <Route path="checkout" element={<CheckoutPage />} />
-              <Route path="tos" element={<TOSPage />} />
-              <Route path="faq" element={<FAQPage />} />
-            </Route>
-          </Routes>
-        </RootProvider>
+        <AuthProvider>
+          <CartProvider>
+            <Routes>
+              <Route path="/" element={<App />}>
+                <Route index element={<Home />} />
+                <Route path="shop" element={<Shop />} />
+                <Route path="contact" element={<Contact />} />
+                <Route path="shop/switch-tester" element={<SwitchTester />} />
+                <Route path="cart" element={<Cart />} />
+                <Route path="login" element={<LoginPage />} />
+                <Route path="register" element={<RegisterPage />} />
+                <Route path="checkout" element={<CheckoutPage />} />
+                <Route path="tos" element={<TOSPage />} />
+                <Route path="faq" element={<FAQPage />} />
+              </Route>
+            </Routes>
+          </CartProvider>
+        </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>
   </React.StrictMode>
