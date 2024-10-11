@@ -35,20 +35,20 @@ const ProductCard: React.FC<SwitchCardProps> = ({
   
   return (
     <Card
-      className={`  w-full h-fit rounded-xl shadow-lg ${
+      className={`bg-accent  w-full h-fit rounded-xl shadow-lg ${
         quantity > 0 ? "border-black  " : ""
       } transition-all duration-300`}
     >
       <CardHeader className="p-0">
         <div 
-          className="aspect-square relative overflow-hidden"
+          className=" aspect-square relative overflow-hidden"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
           <img
-            src={`../../img/primary_${product.image}`}
+            src={`../../img/${product.image}_transparent.png`}
             alt={product.name}
-            className={`w-full h-full object-cover transition-opacity duration-400 rounded-t-xl absolute top-0 left-0
+            className={`h-full object-cover transition-opacity duration-400 rounded-t-xl absolute top-0 left-0
             ${isHovered ? 'opacity-0' : 'opacity-100'}`}
           />
           <img
@@ -59,7 +59,7 @@ const ProductCard: React.FC<SwitchCardProps> = ({
           />
         </div>
       </CardHeader>
-      <CardContent className="p-4 space-y-2">
+      <CardContent className="p-4 pt-0 space-y-2">
         <div className="flex justify-between items-center">
           <span className="text-sm font-medium">{product.brand}</span>
           <Badge variant="secondary">{product.type}</Badge>

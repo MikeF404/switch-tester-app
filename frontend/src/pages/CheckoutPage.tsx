@@ -153,7 +153,7 @@ export default function CheckoutPage() {
                 </div>
                 <div>
                   <Label htmlFor="apartment">
-                    Apartment, suite, etc. (optional)
+                    Apartment, suite, etc.
                   </Label>
                   <Input
                     id="apartment"
