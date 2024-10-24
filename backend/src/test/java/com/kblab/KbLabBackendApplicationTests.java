@@ -67,6 +67,18 @@ class KbLabBackendApplicationTests {
 		assertEquals(response, "Hello World!");
 	}
 
+	//@Test
+	void testContactForm() {
+		Map<String, String> requestBody = new HashMap<>();
+		requestBody.put("userEmail", "test@test.com");
+		requestBody.put("message", "This is a test message");
+		requestBody.put("topic", "Test Message");
+		ResponseEntity<String> response = restTemplate.postForEntity(baseUrl+"/api/sendMessage", new HttpEntity<>(requestBody), String.class);
+
+		assertEquals(response.getStatusCode(), HttpStatus.OK);
+		assertEquals(response.getBody(), "Message sent successfully!");
+	}
+
 	@Test
 	void testSwitches() {
 		ResponseEntity<String> response = restTemplate.getForEntity(baseUrl + "/api/switches", String.class);
