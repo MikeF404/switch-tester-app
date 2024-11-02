@@ -1,8 +1,13 @@
 package com.kblab;
 
-import com.kblab.model.User;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.kblab.model.Cart;
 import com.kblab.repository.UserRepository;
 import com.kblab.repository.CartRepository;
+import com.kblab.repository.OrderRepository;
 import com.kblab.service.TestCleanupService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,12 +44,20 @@ class KbLabBackendApplicationTests {
 	CartRepository cartRepository;
 
 	@Autowired
+	OrderRepository orderRepository;
+
+	@Autowired
 	TestCleanupService cleanupService;
+
+	@Autowired
+	ObjectMapper objectMapper;
 
 	String baseUrl;
 
-	// List to track test user emails
+	// Lists to track and remove created data
 	List<String> testUserEmails = new ArrayList<>();
+	List<Long> createdCartIds = new ArrayList<>();
+	List<Long> createdOrderIds = new ArrayList<>();
 
 	@BeforeEach
 	void setup() {
@@ -54,11 +67,21 @@ class KbLabBackendApplicationTests {
 	@AfterEach
 	@Transactional
 	void cleanup() {
-		// Remove test users based on their email
 		for (String email : testUserEmails) {
 			cleanupService.cleanupTestUserByEmail(email);
 		}
-		testUserEmails.clear();  // Clear the list after cleanup
+		testUserEmails.clear();
+		// Clean up created orders
+		for (Long orderId : createdOrderIds) {
+			orderRepository.deleteById(orderId);
+		}
+		createdOrderIds.clear();
+
+		// Clean up created carts
+		for (Long cartId : createdCartIds) {
+			cartRepository.deleteById(cartId);
+		}
+		createdCartIds.clear();
 	}
 
 	@Test
@@ -67,6 +90,7 @@ class KbLabBackendApplicationTests {
 		assertEquals(response, "Hello World!");
 	}
 
+	// This test creates an actual email. Uncomment to test integration with Mailing Service.
 	//@Test
 	void testContactForm() {
 		Map<String, String> requestBody = new HashMap<>();
@@ -139,13 +163,71 @@ class KbLabBackendApplicationTests {
 		// Perform GET on the cart
 		ResponseEntity<String> getCartResponse = restTemplate.getForEntity(baseUrl + "/api/cart/" + cartId, String.class);
 		assertEquals(HttpStatus.OK, getCartResponse.getStatusCode());
-		assertNotNull(getCartResponse.getBody());
-		assertTrue(getCartResponse.getBody().contains("\"id\":" + cartId));
+		String itemsJson = getCartResponse.getBody();
+		// Making sure JSON isn't null
+		assertNotNull(itemsJson);
+		assertDoesNotThrow(() -> {
+			objectMapper.readTree(itemsJson);
+		});
 
-		// Perform POST on the cart to update it
 		ResponseEntity<String> updateCartResponse = restTemplate.postForEntity(baseUrl + "/api/cart/" + cartId, null, String.class);
 		assertEquals(HttpStatus.OK, updateCartResponse.getStatusCode());
 		assertEquals("Cart updated successfully!", updateCartResponse.getBody());
+	}
+
+	@Test
+	void testCreateAndFetchCart() throws Exception {
+		// Create test cart and obtain the id
+		ResponseEntity<String> postResponse = restTemplate.postForEntity(baseUrl + "/api/cart" ,null, String.class);
+		assertEquals(HttpStatus.CREATED, postResponse.getStatusCode(), "Expected HTTP status OK for cart retrieval");
+		JsonNode createdCartJsonNode = objectMapper.readTree(postResponse.getBody());
+
+		String cartId = createdCartJsonNode.get("cartId").asText();
+		assertNotNull(cartId, "Created Cart Id = " + cartId);
+
+
+		// Update cart
+		String newCartJSON = """
+            [
+                {
+                    "name": "SIMPLE_ITEM_1",
+                    "quantity": 3,
+                    "price": 0
+                },
+                {
+                    "name": "CUSTOM_SWITCH_TESTER",
+                    "size": 10,
+                    "keycaps": "TRANSPARENT",
+                    "quantity: 1,
+                    "price": 0,
+                    "switches": [
+                        { "id": 1, "quantity": 5 },
+                        { "id": 2, "quantity": 5 }
+                    ]
+                }
+            ]
+            """;
+		HttpEntity<String> postRequest = new HttpEntity<>(newCartJSON);
+		ResponseEntity<String> updatePostResponse = restTemplate.postForEntity(baseUrl + "/api/cart/"+ cartId ,postRequest, String.class);
+		assertEquals(HttpStatus.OK, updatePostResponse.getStatusCode(), "Expected HTTP status OK for cart retrieval");
+		assertEquals("Cart updated successfully.",  updatePostResponse.getBody());
+
+		// Step 3: GET the updated cart and validate the returned JSON structure
+		ResponseEntity<String> updatedGetResponse = restTemplate.getForEntity(baseUrl + "/" + cartId, String.class);
+		assertEquals(HttpStatus.OK, updatedGetResponse.getStatusCode(), "Expected HTTP status OK for updated cart retrieval");
+
+		String updatedItemsJson = updatedGetResponse.getBody();
+		JsonNode updatedCartJsonNode = objectMapper.readTree(updatedItemsJson);
+
+		// Validate that the updated JSON contains fields like "price" for each item
+		assertTrue(updatedCartJsonNode.isArray(), "Expected an array of items in updated cart JSON");
+		for (JsonNode itemNode : updatedCartJsonNode) {
+			assertNotNull(itemNode.get("name"), "Item should contain 'name' field");
+			assertNotNull(itemNode.get("quantity"), "Item should contain 'quantity' field");
+			assertTrue(itemNode.get("quantity").asInt() > 0, "Quantity should be a positive integer");
+			assertNotNull(itemNode.get("price"), "Item should contain 'price' field calculated by PriceService");
+			assertTrue(itemNode.get("price").asDouble() > 0, "Price should be a positive number");
+		}
 	}
 
 	private String extractCartIdFromLoginResponse(String responseBody) {

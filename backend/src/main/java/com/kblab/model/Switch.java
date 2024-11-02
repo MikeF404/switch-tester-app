@@ -13,7 +13,7 @@ public class Switch {
     private String name;
     private String brand;
     private String type;
-    private int available;
+    private int stock;
     private String force;
     private String image;
 
@@ -21,11 +21,11 @@ public class Switch {
 
     public Switch() {}
 
-    public Switch(String name, String brand, String type, int available, String force, String image) {
+    public Switch(String name, String brand, String type, int stock, String force, String image) {
         this.name = name;
         this.brand = brand;
         this.type = type;
-        this.available = available;
+        this.stock = stock;
         this.force = force;
         this.image = image;
     }
@@ -62,12 +62,12 @@ public class Switch {
         this.type = type;
     }
 
-    public int getAvailable() {
-        return available;
+    public int getStock() {
+        return stock;
     }
 
-    public void setAvailable(int available) {
-        this.available = available;
+    public void setStock(int available) {
+        this.stock = available;
     }
 
     public String getForce() {
