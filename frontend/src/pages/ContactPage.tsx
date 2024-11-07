@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -16,13 +15,15 @@ import { Link } from "react-router-dom";
 
 export default function ContactPage() {
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [message, setMessage] = useState("");
+  const MESSAGE_MAX_LENGTH = 800;
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container px-4 py-8">
       <h1 className="text-4xl font-bold text-center mb-8">Contact Us</h1>
 
       <div className="grid gap-8 md:grid-cols-2">
-        <Card>
+        <Card className="h-min">
           <CardHeader>
             <CardTitle>Send us a message</CardTitle>
           </CardHeader>
@@ -55,7 +56,15 @@ export default function ContactPage() {
                   id="message"
                   placeholder="Your message here..."
                   className="min-h-[150px]"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value.slice(0, MESSAGE_MAX_LENGTH))}
+                  maxLength={MESSAGE_MAX_LENGTH}
                 />
+                {MESSAGE_MAX_LENGTH - message.length <= 100 ? (
+                  <div className="text-sm text-right text-orange-500">
+                    {MESSAGE_MAX_LENGTH - message.length} characters remaining
+                  </div>
+                ) : null}
               </div>
               <div className="flex items-center justify-end space-x-2">
                 <Checkbox
@@ -64,7 +73,7 @@ export default function ContactPage() {
                   onCheckedChange={() => setIsAnonymous(!isAnonymous)}
                 />
                 <Label htmlFor="anonymous">
-                  Send anonymously. It won't stop us from trying to reply
+                  Send anonymously. It will be impossible to receive a response.
                 </Label>
               </div>
               <Button type="submit" className="w-full">

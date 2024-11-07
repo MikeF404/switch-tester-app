@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 
 interface FeaturedItemCardProps {
   image: string;
-  backgroundColor: string;
   title: string;
   description: string;
   link: string;
@@ -13,7 +12,6 @@ interface FeaturedItemCardProps {
 
 const FeaturedItemCard: React.FC<FeaturedItemCardProps> = ({
   image,
-  backgroundColor,
   title,
   description,
   link,
@@ -21,7 +19,7 @@ const FeaturedItemCard: React.FC<FeaturedItemCardProps> = ({
 }) => {
   return (
     <Link to={link}>
-      <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg" style={{ backgroundColor }}>
+      <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg">
         <CardContent className="p-0">
           <div className="p-6">
             <p className="text-lg mb-4">{description}</p>
