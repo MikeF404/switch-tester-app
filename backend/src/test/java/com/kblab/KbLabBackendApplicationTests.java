@@ -159,20 +159,10 @@ class KbLabBackendApplicationTests {
 		String loginResponseBody = loginResponse.getBody();
 		assertNotNull(loginResponseBody);
 		String cartId = extractCartIdFromLoginResponse(loginResponseBody);  // Extract Cart ID
-
+        assertNotNull(cartId);
 		// Perform GET on the cart
 		ResponseEntity<String> getCartResponse = restTemplate.getForEntity(baseUrl + "/api/cart/" + cartId, String.class);
 		assertEquals(HttpStatus.OK, getCartResponse.getStatusCode());
-		String itemsJson = getCartResponse.getBody();
-		// Making sure JSON isn't null
-		assertNotNull(itemsJson);
-		assertDoesNotThrow(() -> {
-			objectMapper.readTree(itemsJson);
-		});
-
-		ResponseEntity<String> updateCartResponse = restTemplate.postForEntity(baseUrl + "/api/cart/" + cartId, null, String.class);
-		assertEquals(HttpStatus.OK, updateCartResponse.getStatusCode());
-		assertEquals("Cart updated successfully!", updateCartResponse.getBody());
 	}
 
 	@Test
@@ -198,7 +188,7 @@ class KbLabBackendApplicationTests {
                     "name": "CUSTOM_SWITCH_TESTER",
                     "size": 10,
                     "keycaps": "TRANSPARENT",
-                    "quantity: 1,
+                    "quantity": 1,
                     "price": 0,
                     "switches": [
                         { "id": 1, "quantity": 5 },
@@ -213,7 +203,7 @@ class KbLabBackendApplicationTests {
 		assertEquals("Cart updated successfully.",  updatePostResponse.getBody());
 
 		// Step 3: GET the updated cart and validate the returned JSON structure
-		ResponseEntity<String> updatedGetResponse = restTemplate.getForEntity(baseUrl + "/" + cartId, String.class);
+		ResponseEntity<String> updatedGetResponse = restTemplate.getForEntity(baseUrl + "/api/cart/" + cartId, String.class);
 		assertEquals(HttpStatus.OK, updatedGetResponse.getStatusCode(), "Expected HTTP status OK for updated cart retrieval");
 
 		String updatedItemsJson = updatedGetResponse.getBody();

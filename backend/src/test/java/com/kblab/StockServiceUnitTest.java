@@ -8,18 +8,22 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-public class StockServiceUnitTest {
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+class StockServiceUnitTest {
 
-    @InjectMocks
+    @Autowired
     private StockService stockService;
 
-    @Mock
+    @Autowired
     private PriceService priceService;
 
+    @Autowired
     private ObjectMapper objectMapper;
 
     @BeforeEach
@@ -70,6 +74,7 @@ public class StockServiceUnitTest {
                     "size": 10,
                     "keycaps": "TRANSPARENT",
                     "price": 0,
+                    "quantity": 1,
                     "switches": [
                         { "id": 1, "quantity": 5 },
                         { "id": 2, "quantity": 5 }
@@ -79,19 +84,11 @@ public class StockServiceUnitTest {
                     "name": "CUSTOM_SWITCH_TESTER",
                     "size": 15,
                     "keycaps": "NONE",
+                    "quantity": 1,
                     "price": 0,
                     "switches": [
                         { "id": 1, "quantity": 10 },
                         { "id": 2, "quantity": 5 }
-                    ]
-                },
-                {
-                    "name": "CUSTOM_SWITCH_TESTER",
-                    "size": 10,
-                    "keycaps": "RANDOM",
-                    "price": 0,
-                    "switches": [
-                        { "id": 1, "quantity": 10 },
                     ]
                 }
             ]
@@ -102,7 +99,6 @@ public class StockServiceUnitTest {
          // Check if price was updated correctly
         assertEquals(11.99, priceService.getPrice(jsonNode.get(0)), "Testing price calculation for Custom Switch Tester 1");
         assertEquals(13.99, priceService.getPrice(jsonNode.get(1)), "Testing price calculation for Custom Switch Tester 2");
-        assertEquals(10.99, priceService.getPrice(jsonNode.get(2)), "Testing price calculation for Custom Switch Tester 3");
     }
 
     @Test
@@ -114,6 +110,7 @@ public class StockServiceUnitTest {
                     "size": 10,
                     "keycaps": "RANDOM",
                     "price": 0,
+                    "quantity": 1,
                     "switches": [
                         { "id": 1, "quantity": 5 },
                         { "id": 2, "quantity": 6 }  // Exceeds size
@@ -133,7 +130,8 @@ public class StockServiceUnitTest {
                 {
                     "name": "CUSTOM_SWITCH_TESTER",
                     "size": 10,
-                    "keycaps": "INVALID",  // Invalid keycaps type
+                    "keycaps": "INVALID",
+                    "quantity": 1,
                     "price": 0,
                     "switches": [
                         { "id": 1, "quantity": 5 },

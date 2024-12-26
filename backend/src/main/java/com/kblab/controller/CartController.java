@@ -42,7 +42,7 @@ public class CartController {
     public ResponseEntity<Map<String, Long>> createCart() {
         Cart newCart = new Cart();
         newCart.setCreatedAt(LocalDateTime.now());
-        newCart.setItemsJson("{}");  // Empty JSON for a new cart
+        newCart.setItemsJson("[]");  // Empty JSON for a new cart
         cartRepository.save(newCart);
 
         // Return the ID of the newly created cart
@@ -54,6 +54,8 @@ public class CartController {
         return cartRepository.findById(cartId)
                 .map(cart -> {
                     // Validate items JSON against inventory stock levels
+                    System.out.println("Fetched items JSON: " + cartId);
+                    if (cart.getCreatedAt() == null) return ResponseEntity.ok("[]");
                     boolean isValid = stockService.validateCart(cart.getItemsJson());
                     if (!isValid) {
                         return ResponseEntity.badRequest().body("Error: Some items are out of stock or invalid.");

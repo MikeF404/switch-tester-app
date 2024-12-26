@@ -81,7 +81,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         return;
       }
 
-      const response = await fetch("http://10.0.0.216:5001/api/cart", {
+      const response = await fetch("/api/cart", {
         headers: {
           Authorization: token,
         },

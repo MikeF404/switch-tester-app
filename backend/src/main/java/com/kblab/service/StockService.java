@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class StockService {
@@ -30,6 +31,7 @@ public class StockService {
     // Method to validate cart JSON
     public boolean validateCart(String itemsJson) {
         try {
+            if (itemsJson == null || itemsJson.equals("[]")) return true;
             JsonNode items = objectMapper.readTree(itemsJson);
             for (JsonNode item : items) {
                 if (!validateItem(item)) {
@@ -37,7 +39,7 @@ public class StockService {
                 }
             }
             return true;
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
