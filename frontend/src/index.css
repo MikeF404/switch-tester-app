@@ -3,26 +3,41 @@
 @tailwind utilities;
 @layer base {
     :root {
-      --background: 0 0% 88%;
-      --foreground: 220 14% 4%;
-      --card: 0 0% 88%;
-      --card-foreground: 220 14% 4%;
-      --popover: 0 0% 88%;
-      --popover-foreground: 220 14% 4%;
-      --primary: 218 60% 52%;
-      --primary-foreground: 0 0% 88%;
-      --secondary: 251 61% 72%;
-      --secondary-foreground: 220 14% 4%;
-      --muted: 0 0% 20%;
-      --muted-foreground: 220 14% 70%;
-      --accent: 261 61% 61%;
-      --accent-foreground: 220 14% 4%;
-      --destructive: 0 85% 60%;
-      --destructive-foreground: 220 14% 4%;
-      --border: 0 0% 20%;
-      --input: 0 0% 20%;
-      --ring: 261 61% 40%;
-      --radius: 0.5rem;
+      /* Main backgrounds */
+      --background: 201, 52%, 70%; /* #D8C3A5 - main background */
+      --card: 21, 52%, 70%;      /* #EAE7DC - card background */
+      
+      /* Text colors */
+      --foreground: 3, 62%, 20%;    /* Darker version of #8E8D8A for main text */
+      --muted-foreground: 30 1% 55%; /* #8E8D8A for secondary text */
+      
+      /* Accent colors */
+      --primary: 290, 52%, 70%;     /* #E98074 - semi-accent */
+      --destructive: 222 71% 61%; /* #E85A4F - attention/important */
+      
+      /* Supporting colors */
+      --border: 30 1% 55%; /* #8E8D8A - borders */
+      --ring: 6 65% 61%;        /* #E98074 - focus rings */
+      
+      /* Cards and other UI elements */
+      --card-foreground: 220 1% 20%;
+      --popover: 39 25% 89%;
+      --popover-foreground: 220 1% 20%;
+      --primary-foreground: 0 0% 98%;
+      --secondary: 37 13% 91%;
+      --secondary-foreground: 220 1% 20%;
+      --green: 111, 52%, 70%;
+      --muted: 37 13% 91%;
+      --accent: 111, 52%, 70%;
+      --accent-foreground: 220 1% 20%;
+      --destructive-foreground: 0 0% 98%;
+      --input: 37 13% 91%;
+      
+      --radius: 2rem;
+      
+      /* Switch card specific */
+      --switch-card: 201, 52%, 70%;    /* #EAE7DC - same as background */
+      --switch-card-selected: 6 65% 61%;  /* #E98074 - using accent color for selected state */
     }
    
     .dark {
@@ -45,6 +60,12 @@
       --border: 0 0% 60%;
       --input: 0 0% 80%;
       --ring: 261 61% 60%;
+      
+      /* Switch card specific dark mode */
+      --switch-card: 0 0% 15%;  /* Slightly lighter than dark background */
+      --switch-card-selected: 261 61% 39%;  /* Using accent color from dark theme */
+      
+      --radius: 0.5rem;
     }
   }
 @layer base {

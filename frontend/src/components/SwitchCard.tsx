@@ -35,9 +35,12 @@ const ProductCard: React.FC<SwitchCardProps> = ({
   
   return (
     <Card
-      className={`bg-accent  w-full h-fit rounded-xl shadow-lg ${
-        quantity > 0 ? "border-black  " : ""
-      } transition-all duration-300`}
+      className={`w-full h-fit rounded-xl overflow-hidden shadow-lg
+        bg-[hsl(var(--switch-card))]
+        ${quantity > 0 
+          ? "border-8 border-primary border-dashed" 
+          : "border-4 bg-background border-transparent"}
+        transition-all duration-500`}
     >
       <CardHeader className="p-0">
         <div 
