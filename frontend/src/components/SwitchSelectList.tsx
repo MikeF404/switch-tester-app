@@ -32,7 +32,7 @@ const SwitchSelectList: React.FC<SwitchSelectListProps> = ({
   useEffect(() => {
     const fetchSwitches = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/switches", {
+        const response = await fetch("/api/switches", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
