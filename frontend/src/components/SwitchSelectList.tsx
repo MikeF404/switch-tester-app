@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import ProductCard from "./SwitchCard";
 import { Card, CardContent, CardTitle } from "./ui/card";
 import { toast } from "sonner";
@@ -13,46 +13,55 @@ interface Switch {
 }
 
 interface SwitchSelectListProps {
+  switches: Switch[];
   selectedSwitches: Record<number, number>;
   onIncrementSwitch: (id: number) => void;
   onDecrementSwitch: (id: number) => void;
   totalSelected: number;
   switchLimit: number;
+  filters: {
+    brands: string[];
+    types: string[];
+    forceRange: [number, number];
+  };
 }
 
 const SwitchSelectList: React.FC<SwitchSelectListProps> = ({
+  switches,
   selectedSwitches,
   onIncrementSwitch,
   onDecrementSwitch,
   totalSelected,
   switchLimit,
+  filters,
 }) => {
-  const [switches, setSwitches] = useState<Switch[]>([]);
-
-  useEffect(() => {
-    const fetchSwitches = async () => {
-      try {
-        const response = await fetch("/api/switches", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setSwitches(data);
-      } catch (error) {
-        console.error("Error fetching switches:", error);
+  const filteredSwitches = useMemo(() => {
+    return switches.filter(switch_item => {
+      // Brand filter - show switch only if its brand is in the selected brands
+      if (!filters.brands.includes(switch_item.brand)) {
+        return false;
       }
-    };
 
-    fetchSwitches();
-  }, []);
+      // Type filter
+      const switchTypes = switch_item.type.toLowerCase().split(' ');
+      const isAnyTypeUnselected = switchTypes.some(switchType => 
+        !filters.types.includes(switchType.toLowerCase())
+      );
+      if (isAnyTypeUnselected) {
+        return false;
+      }
 
-  const sortedSwitches = [...switches].sort(
+      // Force filter
+      const force = parseInt(switch_item.force.match(/\d+/)?.[0] || "0");
+      if (force < filters.forceRange[0] || force > filters.forceRange[1]) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [switches, filters]);
+
+  const sortedSwitches = [...filteredSwitches].sort(
     (a, b) => (selectedSwitches[b.id] || 0) - (selectedSwitches[a.id] || 0)
   );
 

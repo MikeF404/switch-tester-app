@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Toaster, toast } from "sonner";
@@ -14,8 +14,24 @@ import { Loader2 } from "lucide-react"; // Import the Loader2 icon from lucide-r
 import SwitchTesterPricing from "@/components/SwitchTesterPricing";
 import SwitchSelectList from "@/components/SwitchSelectList";
 import { useCart } from "@/providers/CartProvider";
+import SwitchFilters from "@/components/SwitchFilters";
 
 type SwitchCount = "10" | "15" | "20";
+
+interface Switch {
+  id: number;
+  name: string;
+  type: string;
+  force: string;
+  image: string;
+  brand: string;
+}
+
+interface FilterState {
+  brands: string[];
+  types: string[];
+  forceRange: [number, number];
+}
 
 const SwitchTesterPage: React.FC = () => {
   const [switchCount, setSwitchCount] = useState<SwitchCount>("10");
@@ -27,6 +43,47 @@ const SwitchTesterPage: React.FC = () => {
   >("none");
   const { addToCart, cartCount } = useCart();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [switches, setSwitches] = useState<Switch[]>([]);
+  const [filters, setFilters] = useState<FilterState>({
+    brands: [],
+    types: ['tactile', 'linear', 'silent', 'clicky'],
+    forceRange: [45, 70] as [number, number]
+  });
+
+  useEffect(() => {
+    const fetchSwitches = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/api/switches");
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        setSwitches(data);
+      } catch (error) {
+        console.error("Error fetching switches:", error);
+      }
+    };
+
+    fetchSwitches();
+  }, []);
+
+  useEffect(() => {
+    if (switches.length > 0) {
+      const uniqueBrands = Array.from(new Set(switches.map(s => s.brand)));
+      const forceValues = switches.map(s => parseInt(s.force.match(/\d+/)?.[0] || "0"));
+      const minForce = Math.floor(Math.min(...forceValues) / 5) * 5;
+      const maxForce = Math.ceil(Math.max(...forceValues) / 5) * 5;
+
+      setFilters(prev => ({
+        ...prev,
+        brands: uniqueBrands,
+        forceRange: [minForce, maxForce] as [number, number]
+      }));
+    }
+  }, [switches]);
+
+  console.log('Current state:', {
+    switchesCount: switches.length,
+    filters,
+  });
 
   const totalSelectedSwitches = Object.values(selectedSwitches).reduce(
     (a, b) => a + b,
@@ -106,6 +163,7 @@ const SwitchTesterPage: React.FC = () => {
               switchCount={switchCount}
               setSwitchCount={setSwitchCount}
             />
+
             <div className="flex justify-between gap-2">
               <Button
                 className="w-full"
@@ -136,15 +194,18 @@ const SwitchTesterPage: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+        <SwitchFilters switches={switches} onFiltersChange={setFilters} />
       </div>
       {/* Scrollable Switch Grid Panel */}
       <div className="w-full p-0 lg:p-4 lg:pt-6 ">
         <SwitchSelectList
+          switches={switches}
           selectedSwitches={selectedSwitches}
           onIncrementSwitch={handleIncrementSwitch}
           onDecrementSwitch={handleDecrementSwitch}
           totalSelected={totalSelectedSwitches}
           switchLimit={parseInt(switchCount)}
+          filters={filters}
         />
       </div>
     </div>

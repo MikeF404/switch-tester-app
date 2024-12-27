@@ -25,6 +25,26 @@ interface SwitchCardProps {
   onDecrement: (id: number) => void;
 }
 
+const renderTypeBadges = (type: string) => {
+  const types = type.toLowerCase().split(' ');
+  
+  return (
+    <div className="flex gap-1">
+      {types.map((t, index) => {
+        // Check if the type is one of our known variants
+        const validTypes = ['tactile', 'linear', 'silent', 'clicky'];
+        const variant = validTypes.includes(t) ? t : 'default';
+        
+        return (
+          <Badge key={index} variant={variant as any}>
+            {t}
+          </Badge>
+        );
+      })}
+    </div>
+  );
+};
+
 const ProductCard: React.FC<SwitchCardProps> = ({
   product,
   quantity,
@@ -63,7 +83,7 @@ const ProductCard: React.FC<SwitchCardProps> = ({
       <CardContent className="p-4 pt-0 space-y-2">
         <div className="flex justify-between items-center">
           <span className="text-sm font-medium">{product.brand}</span>
-          <Badge variant="secondary">{product.type}</Badge>
+          {renderTypeBadges(product.type)}
         </div>
         <h2 className=" font-semibold max-h-4">{product.name}</h2>
       </CardContent>
