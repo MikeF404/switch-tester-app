@@ -19,7 +19,7 @@ export default function ContactPage() {
   const MESSAGE_MAX_LENGTH = 800;
 
   return (
-    <div className="container px-4 py-8">
+    <div className="container px-4 py-8 mx-auto">
       <h1 className="text-4xl font-bold text-center mb-8">Contact Us</h1>
 
       <div className="grid gap-8 md:grid-cols-2">

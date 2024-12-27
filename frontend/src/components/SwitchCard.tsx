@@ -35,12 +35,13 @@ const ProductCard: React.FC<SwitchCardProps> = ({
   
   return (
     <Card
-      className={`bg-accent  w-full h-fit rounded-xl shadow-lg ${
-        quantity > 0 ? "border-black  " : ""
-      } transition-all duration-300`}
+      className={`bg-background w-full h-fit rounded-xl border-2 ${
+        quantity > 0 ? "border-accent " : ""
+      } 
+      transition-all duration-300`}
     >
       <CardHeader className="p-0">
-        <div 
+        <div
           className=" aspect-square relative overflow-hidden"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
@@ -49,13 +50,13 @@ const ProductCard: React.FC<SwitchCardProps> = ({
             src={`../../img/${product.image}_transparent.png`}
             alt={product.name}
             className={`h-full object-cover transition-opacity duration-400 rounded-t-xl absolute top-0 left-0
-            ${isHovered ? 'opacity-0' : 'opacity-100'}`}
+            ${isHovered ? "opacity-0" : "opacity-100"}`}
           />
           <img
             src={`../../img/secondary_${product.image}`}
             alt={product.name}
             className={`w-full h-full object-cover rounded-t-xl transition-opacity duration-400 absolute top-0 left-0
-            ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+            ${isHovered ? "opacity-100" : "opacity-0"}`}
           />
         </div>
       </CardHeader>

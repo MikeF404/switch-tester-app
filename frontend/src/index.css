@@ -1,28 +1,53 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/*
+  Colors used:
+  #e2e8f0 - 214, 32%, 91% - slate-200
+  #cbd5e1 - 213, 27%, 84% -slate-300
+  #94a3b8 - 215, 20%, 65% slate-400
+  #64748b - 215, 16%, 47% slate-500
+  #475569 - 215, 19%, 35% slate-600
+  #334155 - 215, 25%, 27% slate-700
+  #1e293b - 217, 33%, 17% slate-800
+  #0f172a - 222, 47%, 11%slate-900
+  #ffdd2d - 50, 100%, 59% - yellow for primary elements and contrast
+  #fcc726 - 45, 97%, 57% - darker yellow for hover
+*/
 @layer base {
     :root {
-      --background: 0 0% 88%;
-      --foreground: 220 14% 4%;
-      --card: 0 0% 88%;
-      --card-foreground: 220 14% 4%;
-      --popover: 0 0% 88%;
-      --popover-foreground: 220 14% 4%;
-      --primary: 218 60% 52%;
-      --primary-foreground: 0 0% 88%;
-      --secondary: 251 61% 72%;
-      --secondary-foreground: 220 14% 4%;
-      --muted: 0 0% 20%;
-      --muted-foreground: 220 14% 70%;
-      --accent: 261 61% 61%;
-      --accent-foreground: 220 14% 4%;
-      --destructive: 0 85% 60%;
-      --destructive-foreground: 220 14% 4%;
-      --border: 0 0% 20%;
-      --input: 0 0% 20%;
-      --ring: 261 61% 40%;
-      --radius: 0.5rem;
+      /* Main backgrounds */
+      --background: 200, 18%, 97%;      /* Super light gray for main background */
+      --foreground: 215 25% 27%;   /* Slate-800 for primary text */
+      
+      /* Card and Popover */
+      --card: 214, 32%, 91%;         /* Slate-200 for cards */
+      --card-foreground: 215 25% 27%;  /* Slate-800 for card text */
+      --popover: 214 32% 91%;      /* Slate-200 for popovers */
+      --popover-foreground: 215 25% 27%;  /* Slate-800 for popover text */
+      
+      /* Primary colors - using yellow as accent */
+      --primary: 50 100% 59%;      /* #ffdd2d - Yellow for primary elements */
+      --primary-foreground: 215 25% 27%;  /* Slate-800 for text on primary */
+      
+      /* Secondary and accent - using variations of yellow */
+      --secondary: 50 100% 59%;    /* Same as primary for consistency */
+      --secondary-foreground: 215 25% 27%;  /* Slate-800 for text */
+      --accent: 50 100% 59%;       /* Yellow accent */
+      --accent-foreground: 215 25% 27%;  /* Slate-800 for text on accent */
+      
+      /* Utility colors */
+      --muted: 215 25% 27%;        /* Slate-800 for muted elements */
+      --muted-foreground: 215 20% 65%;  /* Slate-400 for muted text */
+      --destructive: 0 85% 60%;     /* Red for destructive actions */
+      --destructive-foreground: 215 25% 27%;  /* Slate-800 for text */
+      
+      /* Borders and inputs */
+      --border: 216 32% 84%;       /* Slate-300 for borders */
+      --input: 216 32% 84%;        /* Slate-300 for input borders */
+      --ring: 45, 97%, 57%;         /* Slightly darker yellow for focus rings */
+      
+      --radius: 1rem;
     }
    
     .dark {
@@ -32,19 +57,19 @@
       --card-foreground: 220 14% 96%;
       --popover: 0 0% 12%;
       --popover-foreground: 220 14% 96%;
-      --primary: 218 60% 48%;
-      --primary-foreground: 220 14% 96%;
-      --secondary: 251 61% 28%;
-      --secondary-foreground: 220 14% 96%;
+      --primary: 47 100% 59%;
+      --primary-foreground: 215 25% 27%;
+      --secondary: 47 100% 59%;
+      --secondary-foreground: 215 25% 27%;
       --muted: 0 0% 80%;
       --muted-foreground: 220 14% 96%;
-      --accent: 261 61% 39%;
-      --accent-foreground: 220 14% 96%;
+      --accent: 47 100% 59%;
+      --accent-foreground: 215 25% 27%;
       --destructive: 0 62% 30%;
       --destructive-foreground: 223 14% 10%;
       --border: 0 0% 60%;
       --input: 0 0% 80%;
-      --ring: 261 61% 60%;
+      --ring: 47 100% 50%;
     }
   }
 @layer base {
