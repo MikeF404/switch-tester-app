@@ -91,7 +91,7 @@ const ProductCard: React.FC<SwitchCardProps> = ({
         <span className="text-sm text-gray-600">{product.force}</span>
         <div className="w-[100px]">
           {quantity === 0 ? (
-            <Button className="w-full" onClick={() => onIncrement(product.id)}>
+            <Button variant="outline" className="w-full" onClick={() => onIncrement(product.id)}>
               Add
             </Button>
           ) : (
