@@ -3,6 +3,7 @@ package com.kblab.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "carts")
@@ -18,31 +19,20 @@ public class Cart {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = true)
-    private User user;
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SimpleCartItem> simpleItems = new ArrayList<>();
 
-    @Lob
-    private String itemsJson;
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ComplexCartItem> complexItems = new ArrayList<>();
 
     // Getters and Setters
     public Cart() {}
 
-    public Cart(LocalDateTime createdAt, LocalDateTime updatedAt, User user, String itemsJson) {
+    public Cart(LocalDateTime createdAt, LocalDateTime updatedAt, List<SimpleCartItem> simpleItems, List<ComplexCartItem> complexItems) {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.user = user;
-        this.itemsJson = itemsJson;
-    }
-    public Cart(LocalDateTime createdAt, LocalDateTime updatedAt, User user) {
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.user = user;
-    }
-    public Cart(LocalDateTime createdAt, LocalDateTime updatedAt, String itemsJson) {
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.itemsJson = itemsJson;
+        this.simpleItems = simpleItems;
+        this.complexItems = complexItems;
     }
 
     public Long getId() {
@@ -69,19 +59,19 @@ public class Cart {
         this.updatedAt = updatedAt;
     }
 
-    public User getUser() {
-        return user;
+    public List<SimpleCartItem> getSimpleItems() {
+        return simpleItems;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setSimpleItems(List<SimpleCartItem> simpleItems) {
+        this.simpleItems = simpleItems;
     }
 
-    public String getItemsJson() {
-        return itemsJson;
+    public List<ComplexCartItem> getComplexItems() {
+        return complexItems;
     }
 
-    public void setItemsJson(String itemsJson) {
-        this.itemsJson = itemsJson;
+    public void setComplexItems(List<ComplexCartItem> complexItems) {
+        this.complexItems = complexItems;
     }
 }

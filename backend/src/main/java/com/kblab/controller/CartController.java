@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/cart")
 public class CartController {
 
@@ -37,6 +38,9 @@ public class CartController {
     ObjectMapper mapper = new ObjectMapper();
     @Autowired
     private PriceService priceService;
+
+    @Autowired
+    private CartService cartService;
 
     @PostMapping
     public ResponseEntity<Map<String, Long>> createCart() {
@@ -85,9 +89,6 @@ public class CartController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cart not found"));
     }
 
-
-
-
     @PostMapping("/purchase")
     public ResponseEntity<?> purchaseCart(@RequestParam Long cartId, @RequestParam(required = false) Long userId) {
         Cart cart = cartRepository.findById(cartId)
@@ -123,8 +124,6 @@ public class CartController {
         return ResponseEntity.ok("Order placed successfully!");
     }
 
-
-
     private double calculateTotal(String itemsJson) {
         double total = 0.0;
         try {
@@ -143,5 +142,13 @@ public class CartController {
     //TODO: Temporary flat rate - potentially replace with Shipping calculation
     private double calculateShipping(String itemsJson) {
         return 8.0;
+    }
+
+    @PostMapping("/{cartId}/add-custom-tester")
+    public ResponseEntity<?> addCustomTester(
+            @PathVariable Long cartId,
+            @RequestBody CustomTesterRequest request) {
+        ComplexCartItem item = cartService.addCustomTesterToCart(cartId, request);
+        return ResponseEntity.ok(item);
     }
 }

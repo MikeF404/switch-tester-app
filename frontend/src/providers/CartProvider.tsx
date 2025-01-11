@@ -52,7 +52,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         return;
       }
 
-      const response = await fetch("http://10.0.0.216:5001/api/cart/count", {
+      const response = await fetch("http://localhost:8080/api/cart/count", {
         headers: {
           Authorization: token,
         },
@@ -81,7 +81,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         return;
       }
 
-      const response = await fetch("/api/cart", {
+      const response = await fetch("http://localhost:8080/api/cart", {
         headers: {
           Authorization: token,
         },
@@ -121,7 +121,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
           throw new Error("No token found");
         }
 
-        const response = await fetch("http://10.0.0.216:5001/api/cart/add", {
+        const response = await fetch("http://localhost:8080/api/cart/add", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -161,7 +161,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         }
 
         const response = await fetch(
-          `http://10.0.0.216:5001/api/cart/remove/${itemId}`,
+          `http://localhost:8080/api/cart/remove/${itemId}`,
           {
             method: "DELETE",
             headers: {

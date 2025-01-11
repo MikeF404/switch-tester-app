@@ -8,3 +8,4 @@ frontend/src/.env
 backend/test_data.py
 backend/test_data.py
 backend/env.properties
+/CaptchaTest
