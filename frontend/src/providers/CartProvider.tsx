@@ -1,31 +1,36 @@
-import React, {
-  createContext,
-  useState,
-  useContext,
-  useEffect,
-  useCallback,
-} from "react";
-import { TokenExpiredDialog } from "../components/TokenExpiredDialog";
-import { useAuth } from "./AuthProvider";
-
-interface CartItem {
-  id: string;
-  name: string;
-  size: number;
-  keycaps: string;
-  switches: Array<{ id: number; name: string; quantity: number }>;
-  price: number;
-  quantity: number;
-}
+import React, { createContext, useContext, useState, useCallback } from 'react';
 
 interface CartContextType {
   cartCount: number;
   cartItems: CartItem[];
-  addToCart: (tester: any) => Promise<string>;
-  removeFromCart: (itemId: string) => Promise<void>;
-  updateCartCount: () => Promise<void>;
+  addToCart: (item: SimpleCartItem | CustomTesterItem) => Promise<string>;
+  removeFromCart: (cartId: string, itemId: string) => Promise<void>;
+  updateItemQuantity: (itemId: string, quantity: number) => Promise<void>;
   updateCart: () => Promise<void>;
   clearCart: () => void;
+}
+
+interface SimpleCartItem {
+  itemId: number;
+  quantity: number;
+}
+
+interface CustomTesterItem {
+  name: string;
+  size: number;
+  keycaps: string;
+  switches: Array<{ id: number; quantity: number }>;
+  quantity: number;
+}
+
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  size?: number;
+  keycaps?: string;
+  switches?: Array<{ id: number; name: string; quantity: number }>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -35,184 +40,164 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartCount, setCartCount] = useState(0);
-  const [isTokenExpiredDialogOpen, setIsTokenExpiredDialogOpen] = useState(false);
-  const { logout } = useAuth();
-
-  const getToken = useCallback(() => localStorage.getItem("token"), []);
-
-  const handleTokenExpired = useCallback(() => {
-    setIsTokenExpiredDialogOpen(true);
-  }, []);
-
-  const updateCartCount = async () => {
-    try {
-      const token = getToken();
-      if (!token) {
-        console.error("No token found");
-        return;
-      }
-
-      const response = await fetch("http://localhost:8080/api/cart/count", {
-        headers: {
-          Authorization: token,
-        },
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch cart count:", errorData);
-        if (response.status === 401) {
-          handleTokenExpired();
-          return;
-        }
-        throw new Error(errorData.message || "Failed to fetch cart count");
-      }
-      const data = await response.json();
-      setCartCount(data.cart_count);
-    } catch (error) {
-      console.error("Error fetching cart count:", error);
-    }
-  };
 
   const updateCart = useCallback(async () => {
     try {
-      const token = getToken();
-      if (!token) {
-        //console.error("No token found");
+      const cartId = localStorage.getItem('cartId');
+      if (!cartId) {
+        setCartItems([]);
+        setCartCount(0);
         return;
       }
 
-      const response = await fetch("http://localhost:8080/api/cart", {
-        headers: {
-          Authorization: token,
-        },
-      });
+      const response = await fetch(`http://localhost:8080/api/cart/${cartId}`);
 
       if (!response.ok) {
-        if (response.status === 401) {
-          handleTokenExpired();
-          return;
-        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
+      const cart = await response.json();
+      
+      // Transform cart items to match the frontend format
+      const transformedItems = cart.items.map((item: any) => ({
+        id: item.item.id,
+        name: item.item.name,
+        price: item.item.price,
+        quantity: item.quantity,
+        // For custom testers
+        size: item.item.size,
+        keycaps: item.item.keycaps,
+        switches: item.item.switches?.map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          quantity: s.quantity
+        }))
+      }));
 
-      if (data.cart_data && Array.isArray(data.cart_data)) {
-        setCartItems(data.cart_data);
-        setCartCount(data.cart_count || data.cart_data.length);
-      } else {
-        console.error("Received invalid cart data:", data);
-        setCartItems([]);
-        setCartCount(0);
-      }
+      setCartItems(transformedItems);
+      setCartCount(transformedItems.length);
     } catch (error) {
       console.error("Error updating cart:", error);
       setCartItems([]);
       setCartCount(0);
     }
-  }, [getToken, handleTokenExpired]);
+  }, []);
 
-  const addToCart = useCallback(
-    async (item: CartItem) => {
-      try {
-        const token = getToken();
-        if (!token) {
-          console.error("No token found");
-          throw new Error("No token found");
+  const addToCart = useCallback(async (item: SimpleCartItem | CustomTesterItem) => {
+    try {
+      const cartId = localStorage.getItem('cartId');
+      
+      const url = new URL('http://localhost:8080/api/cart/add');
+      if ('itemId' in item) {
+        // Simple item
+        url.searchParams.append('itemId', item.itemId.toString());
+        url.searchParams.append('quantity', item.quantity.toString());
+        if (cartId) {
+          url.searchParams.append('cartId', cartId);
         }
-
-        const response = await fetch("http://localhost:8080/api/cart/add", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token,
-          },
-          body: JSON.stringify(item),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error("Failed to add to cart:", errorData);
-          if (response.status === 401) {
-            handleTokenExpired();
-            return;
-          }
-          throw new Error(errorData.message || "Failed to add to cart");
+      } else {
+        // Custom tester
+        // Add custom tester parameters
+        if (cartId) {
+          url.searchParams.append('cartId', cartId);
         }
-
-        const data = await response.json();
-        await updateCart();
-        return data.message;
-      } catch (error) {
-        console.error("Error adding to cart:", error);
-        throw error;
+        url.searchParams.append('name', item.name);
+        url.searchParams.append('size', item.size.toString());
+        url.searchParams.append('keycaps', item.keycaps);
+        url.searchParams.append('switches', JSON.stringify(item.switches));
+        url.searchParams.append('quantity', item.quantity.toString());
       }
-    },
-    [getToken, handleTokenExpired]
-  );
 
-  const removeFromCart = useCallback(
-    async (itemId: string) => {
-      try {
-        const token = getToken();
-        if (!token) {
-          console.error("No token found");
-          return;
-        }
+      const response = await fetch(url.toString(), {
+        method: 'POST'
+      });
 
-        const response = await fetch(
-          `http://localhost:8080/api/cart/remove/${itemId}`,
-          {
-            method: "DELETE",
-            headers: {
-              Authorization: token,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          if (response.status === 401) {
-            handleTokenExpired();
-            return;
-          }
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        await updateCart();
-      } catch (error) {
-        console.error("Error removing from cart:", error);
-        throw error;
+      if (!response.ok) {
+        throw new Error('Failed to add item to cart');
       }
-    },
-    [getToken, handleTokenExpired]
-  );
+
+      const data = await response.json();
+      
+      // Save the cartId if it's a new cart
+      if (!cartId && data.id) {
+        localStorage.setItem('cartId', data.id);
+      }
+
+      await updateCart();
+      return "Item added to cart";
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      throw error;
+    }
+  }, [updateCart]);
+
+  const removeFromCart = useCallback(async (cartId: string, itemId: string) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/cart/${cartId}/items/${itemId}`,
+        {
+          method: 'DELETE'
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to remove item from cart');
+      }
+
+      await updateCart();
+    } catch (error) {
+      console.error('Error removing item from cart:', error);
+      throw error;
+    }
+  }, [updateCart]);
+
+  const updateItemQuantity = useCallback(async (itemId: string, quantity: number) => {
+    try {
+      const cartId = localStorage.getItem('cartId');
+      if (!cartId) return;
+
+      if (quantity <= 0) {
+        await removeFromCart(cartId, itemId);
+        return;
+      }
+
+      const response = await fetch(
+        `http://localhost:8080/api/cart/${cartId}/items/${itemId}?quantity=${quantity}`,
+        {
+          method: 'PUT'
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to update item quantity');
+      }
+
+      await updateCart();
+    } catch (error) {
+      console.error('Error updating item quantity:', error);
+      throw error;
+    }
+  }, [removeFromCart, updateCart]);
 
   const clearCart = useCallback(() => {
+    localStorage.removeItem('cartId');
     setCartItems([]);
     setCartCount(0);
   }, []);
 
-  const value = {
-    cartItems,
-    cartCount,
-    addToCart,
-    removeFromCart,
-    updateCartCount,
-    updateCart,
-    clearCart,
-  };
-
-  useEffect(() => {
-    updateCart();
-  }, []);
-
   return (
-    <CartContext.Provider value={value}>
+    <CartContext.Provider
+      value={{
+        cartCount,
+        cartItems,
+        addToCart,
+        removeFromCart,
+        updateItemQuantity,
+        updateCart,
+        clearCart,
+      }}
+    >
       {children}
-      <TokenExpiredDialog
-        isOpen={isTokenExpiredDialogOpen}
-        onClose={() => setIsTokenExpiredDialogOpen(false)}
-      />
     </CartContext.Provider>
   );
 };
@@ -220,7 +205,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 export const useCart = () => {
   const context = useContext(CartContext);
   if (context === undefined) {
-    throw new Error("useCart must be used within a CartProvider");
+    throw new Error('useCart must be used within a CartProvider');
   }
   return context;
 };

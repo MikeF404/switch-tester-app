@@ -9,8 +9,23 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useCart } from "@/providers/CartProvider";
+import { toast } from "sonner";
 
 const Shop: React.FC = () => {
+  const { addToCart } = useCart();
+  const handleAddToCart = async () => {
+    try {
+      await addToCart({
+        itemId: 1,
+        quantity: 1
+      });
+      toast.success("Item added to cart");
+    } catch (error) {
+      console.error("Error adding item to cart:", error);
+      toast.error("Error adding item to cart");
+    }
+  };
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold text-center mb-8">Shop</h1>
@@ -45,16 +60,20 @@ const Shop: React.FC = () => {
             className="w-full object-cover"
           />
           <CardHeader>
-            <CardTitle>Custom Switch Tester</CardTitle>
+            <CardTitle>Layout Tester</CardTitle>
             <CardDescription>
-              Create a unique tester that features only the switches you are
-              interested in
+              Try out 3 most popular layouts and see which one you like best
             </CardDescription>
           </CardHeader>
           <CardContent className="mt-auto">
             <div className="flex justify-between items-center">
-              <div className="text-xl">$10-$14</div>
-              <Button>Customize</Button>
+              <div className="text-xl">$7.99</div>
+              <div className="flex gap-2">
+                <Link to="/shop/layout-tester">
+                  <Button>Learn More</Button>
+                </Link>
+                <Button onClick={handleAddToCart}>Add to Cart</Button>
+              </div>
             </div>
           </CardContent>
         </Card>

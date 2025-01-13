@@ -1,32 +1,49 @@
-@Embeddable
+package com.kblab.model;
+
+import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
+@Entity
+@Table(name = "cart_items")
+@IdClass(CartItemId.class)  // Reference to our composite key class
 public class CartItem {
-    private Long itemId;      // ID of either SimpleItem or SwitchTester
-    private String itemType;  // "SIMPLE_ITEM" or "SWITCH_TESTER"
+    @Id
+    @ManyToOne
+    @JoinColumn(name = "cart_id")
+    @JsonBackReference
+    private Cart cart;
+
+    @Id
+    @ManyToOne
+    @JoinColumn(name = "item_id")
+    private Item item;
+
     private Integer quantity;
 
-    // Constructors, getters, setters
+    // Constructors
     public CartItem() {}
 
-    public CartItem(Long itemId, String itemType, Integer quantity) {
-        this.itemId = itemId;
-        this.itemType = itemType;
+    public CartItem(Cart cart, Item item, Integer quantity) {
+        this.cart = cart;
+        this.item = item;
         this.quantity = quantity;
     }
 
-    public Long getItemId() {
-        return itemId;
+    // Getters and setters
+    public Cart getCart() {
+        return cart;
     }
 
-    public void setItemId(Long itemId) {
-        this.itemId = itemId;
+    public void setCart(Cart cart) {
+        this.cart = cart;
     }
 
-    public String getItemType() {
-        return itemType;
+    public Item getItem() {
+        return item;
     }
 
-    public void setItemType(String itemType) {
-        this.itemType = itemType;
+    public void setItem(Item item) {
+        this.item = item;
     }
 
     public Integer getQuantity() {
@@ -36,4 +53,4 @@ public class CartItem {
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
     }
-} 
+}

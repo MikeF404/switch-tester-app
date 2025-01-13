@@ -1,59 +1,22 @@
+package com.kblab.model;
+import jakarta.persistence.*;
+
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "simple_items")
-public class SimpleItem {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    private String name;
-    private String description;
-    private BigDecimal price;
+public class SimpleItem extends Item {
     private Integer stock;
+
+    // Constructors
+    public SimpleItem() {}
     
-    // Getters, setters, constructors
-
-    public SimpleItem() {
-    }
-
-    public SimpleItem(String name, String description, BigDecimal price, Integer stock) {
-        this.name = name;
-        this.description = description;
-        this.price = price;
+    public SimpleItem(String name, BigDecimal price, Integer stock) {
+        super(name, price);
         this.stock = stock;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-
+    // Getter and setter
     public Integer getStock() {
         return stock;
     }
@@ -61,16 +24,4 @@ public class SimpleItem {
     public void setStock(Integer stock) {
         this.stock = stock;
     }
-
-    @Override
-    public String toString() {
-        return "SimpleItem{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", price=" + price +
-                ", stock=" + stock +
-                '}';
-    }
-    
 } 
