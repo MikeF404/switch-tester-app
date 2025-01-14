@@ -35,9 +35,7 @@ interface FilterState {
 
 const SwitchTesterPage: React.FC = () => {
   const [switchCount, setSwitchCount] = useState<SwitchCount>("10");
-  const [selectedSwitches, setSelectedSwitches] = useState<
-    Record<number, number>
-  >({});
+  const [selectedSwitches, setSelectedSwitches] = useState<number[]>([]);
   const [keycapType, setKeycapType] = useState<
     "none" | "transparent" | "random"
   >("none");
@@ -80,15 +78,7 @@ const SwitchTesterPage: React.FC = () => {
     }
   }, [switches]);
 
-  console.log('Current state:', {
-    switchesCount: switches.length,
-    filters,
-  });
-
-  const totalSelectedSwitches = Object.values(selectedSwitches).reduce(
-    (a, b) => a + b,
-    0
-  );
+  const totalSelectedSwitches = selectedSwitches.length;
   const isOverLimit = totalSelectedSwitches > parseInt(switchCount);
 
   let navigate = useNavigate();
@@ -98,26 +88,37 @@ const SwitchTesterPage: React.FC = () => {
     navigate(path);
   };
 
+  const handleToggleSwitch = (id: number) => {
+    setSelectedSwitches(prev => {
+      if (prev.includes(id)) {
+        return prev.filter(switchId => switchId !== id);
+      }
+      if (prev.length >= parseInt(switchCount)) {
+        toast.error(`You can only select ${switchCount} switches.`);
+        return prev;
+      }
+      return [...prev, id];
+    });
+  };
+
   const handleAddToCart = useCallback(async () => {
-    if (isOverLimit) {
-      toast.error(`Please select exactly ${switchCount} switches.`);
-    } else if (totalSelectedSwitches < parseInt(switchCount)) {
+    if (selectedSwitches.length < parseInt(switchCount)) {
       toast.error(
-        `Please select ${switchCount} switches. You've only selected ${totalSelectedSwitches}.`
+        `Please select ${switchCount} switches. You've only selected ${selectedSwitches.length}.`
       );
     } else {
       setIsAddingToCart(true);
       try {
         const message: string = await addToCart({
-          id: "", // This will be generated on the backend
+          id: "",
           name: "Custom Switch Tester",
           size: parseInt(switchCount),
           keycaps: keycapType,
-          switches: Object.entries(selectedSwitches).map(([id, quantity]) => ({
-            id: parseInt(id),
-            quantity,
+          switches: selectedSwitches.map(id => ({
+            id,
+            quantity: 1,
           })),
-          price: 0, // Price will be calculated on the backend
+          price: 0,
           quantity: 1,
         });
         toast.success(message, {
@@ -133,22 +134,7 @@ const SwitchTesterPage: React.FC = () => {
         setTimeout(() => setIsAddingToCart(false), 1000);
       }
     }
-  }, [isOverLimit, switchCount, totalSelectedSwitches, addToCart]);
-
-  const handleIncrementSwitch = (id: number) => {
-    setSelectedSwitches((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
-  };
-
-  const handleDecrementSwitch = (id: number) => {
-    setSelectedSwitches((prev) => {
-      const newQuantity = Math.max(0, (prev[id] || 0) - 1);
-      if (newQuantity === 0) {
-        const { [id]: _, ...rest } = prev;
-        return rest;
-      }
-      return { ...prev, [id]: newQuantity };
-    });
-  };
+  }, [switchCount, selectedSwitches, addToCart]);
 
   return (
     <div className="flex flex-col lg:flex-row">
@@ -162,6 +148,8 @@ const SwitchTesterPage: React.FC = () => {
             <SwitchTesterPricing
               switchCount={switchCount}
               setSwitchCount={setSwitchCount}
+              keycapType={keycapType}
+              setKeycapType={setKeycapType}
             />
 
             <div className="flex justify-between gap-2">
@@ -201,9 +189,7 @@ const SwitchTesterPage: React.FC = () => {
         <SwitchSelectList
           switches={switches}
           selectedSwitches={selectedSwitches}
-          onIncrementSwitch={handleIncrementSwitch}
-          onDecrementSwitch={handleDecrementSwitch}
-          totalSelected={totalSelectedSwitches}
+          onToggleSwitch={handleToggleSwitch}
           switchLimit={parseInt(switchCount)}
           filters={filters}
         />

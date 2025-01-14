@@ -14,10 +14,8 @@ interface Switch {
 
 interface SwitchSelectListProps {
   switches: Switch[];
-  selectedSwitches: Record<number, number>;
-  onIncrementSwitch: (id: number) => void;
-  onDecrementSwitch: (id: number) => void;
-  totalSelected: number;
+  selectedSwitches: number[];
+  onToggleSwitch: (id: number) => void;
   switchLimit: number;
   filters: {
     brands: string[];
@@ -29,60 +27,39 @@ interface SwitchSelectListProps {
 const SwitchSelectList: React.FC<SwitchSelectListProps> = ({
   switches,
   selectedSwitches,
-  onIncrementSwitch,
-  onDecrementSwitch,
-  totalSelected,
-  switchLimit,
+  onToggleSwitch,
   filters,
+  switchLimit,
 }) => {
-  const filteredSwitches = useMemo(() => {
-    return switches.filter(switch_item => {
-      // Brand filter - show switch only if its brand is in the selected brands
-      if (!filters.brands.includes(switch_item.brand)) {
-        return false;
-      }
-
-      // Type filter
-      const switchTypes = switch_item.type.toLowerCase().split(' ');
-      const isAnyTypeUnselected = switchTypes.some(switchType => 
-        !filters.types.includes(switchType.toLowerCase())
-      );
-      if (isAnyTypeUnselected) {
-        return false;
-      }
-
-      // Force filter
-      const force = parseInt(switch_item.force.match(/\d+/)?.[0] || "0");
-      if (force < filters.forceRange[0] || force > filters.forceRange[1]) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [switches, filters]);
-
-  const sortedSwitches = [...filteredSwitches].sort(
-    (a, b) => (selectedSwitches[b.id] || 0) - (selectedSwitches[a.id] || 0)
-  );
+  const filteredSwitches = switches.filter((switch_) => {
+    const forceValue = parseInt(switch_.force.match(/\d+/)?.[0] || "0");
+    return (
+      filters.brands.includes(switch_.brand) &&
+      filters.types.some(type => 
+        switch_.type.toLowerCase().includes(type.toLowerCase())
+      ) &&
+      forceValue >= filters.forceRange[0] &&
+      forceValue <= filters.forceRange[1]
+    );
+  });
 
   return (
     <Card className="flex flex-col w-full overflow-y-hidden">
       <CardTitle
         className={`px-6 pt-6 pb-2 ${
-          totalSelected > switchLimit ? "text-red-500" : ""
+          selectedSwitches.length > switchLimit ? "text-red-500" : ""
         }`}
       >
-        Select Switches ({totalSelected}/{switchLimit})
+        Select Switches ({selectedSwitches.length}/{switchLimit})
       </CardTitle>
       <CardContent className="w-full px-2 lg:px-6 pb-6 pt-2 overflow-y-auto">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {sortedSwitches.map((switch_item) => (
+          {filteredSwitches.map((switch_) => (
             <ProductCard
-              key={switch_item.id}
-              product={switch_item}
-              quantity={selectedSwitches[switch_item.id] || 0}
-              onIncrement={onIncrementSwitch}
-              onDecrement={onDecrementSwitch}
+              key={switch_.id}
+              product={switch_}
+              isSelected={selectedSwitches.includes(switch_.id)}
+              onToggle={onToggleSwitch}
             />
           ))}
         </div>

@@ -9,8 +9,8 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/providers/CartProvider";
-import { useNavigate } from "react-router-dom";
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowRight, Minus, Plus, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 const CartPage: React.FC = () => {
@@ -39,14 +39,13 @@ const CartPage: React.FC = () => {
         
       </div>
           <div className="text-sm">
-            <p>Details:</p>
             <p>size: {item.size || "N/A"}</p>
             <p>keycaps: {item.keycaps || "N/A"}</p>
             <p>switches:</p>
             <ul className="list-disc pl-5">
               {item.switches.map((switch_item: any) => (
                 <li key={switch_item.id}>
-                  {switch_item.name} x{switch_item.quantity}
+                  {switch_item.name} 
                 </li>
               ))}
             </ul>
@@ -72,12 +71,16 @@ const CartPage: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">
+      <h1 className="text-4xl font-bold text-center mb-8">Cart</h1>
       {cartItems.length === 0 ? (
-        <div>Your cart is empty</div>
+        <div className="flex justify-center items-center space-x-4">
+          <div className="text-center text-2xl">Nothing here yet! </div>
+          <Link to="/shop"><p className="text-center underline">(fix it)</p></Link>
+        </div>
       ) : (
         <>
           <div>
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center space-y-4">
               {cartItems.map((item) => (
                 <Card
                   key={item.id}

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Trash, Minus, Plus, Trash2 } from "lucide-react";
+import { Trash, Minus, Plus, Trash2, Weight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,9 +20,8 @@ interface Switch {
 
 interface SwitchCardProps {
   product: Switch;
-  quantity: number;
-  onIncrement: (id: number) => void;
-  onDecrement: (id: number) => void;
+  isSelected: boolean;
+  onToggle: (id: number) => void;
 }
 
 const renderTypeBadges = (type: string) => {
@@ -47,16 +46,15 @@ const renderTypeBadges = (type: string) => {
 
 const ProductCard: React.FC<SwitchCardProps> = ({
   product,
-  quantity,
-  onIncrement,
-  onDecrement,
+  isSelected,
+  onToggle,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   
   return (
     <Card
-      className={`bg-background w-full h-fit rounded-xl border-2 ${
-        quantity > 0 ? "border-accent " : ""
+      className={`bg-background w-full h-fit rounded-xl border-4 ${
+        isSelected ? "border-accent " : ""
       } 
       transition-all duration-300`}
     >
@@ -88,40 +86,17 @@ const ProductCard: React.FC<SwitchCardProps> = ({
         <h2 className=" font-semibold max-h-4">{product.name}</h2>
       </CardContent>
       <CardFooter className="flex justify-between p-3 items-center">
-        <span className="text-sm text-gray-600">{product.force}</span>
-        <div className="w-[100px]">
-          {quantity === 0 ? (
-            <Button variant="outline" className="w-full" onClick={() => onIncrement(product.id)}>
-              Add
-            </Button>
-          ) : (
-            <div className="flex items-center justify-between w-full">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => onDecrement(product.id)}
-                aria-label={
-                  quantity === 1 ? "Remove from cart" : "Decrease quantity"
-                }
-              >
-                {quantity === 1 ? (
-                  <Trash2 className="h-4 w-4" color="#cc0000" />
-                ) : (
-                  <Minus className="h-4 w-4" strokeWidth={3.5} />
-                )}
-              </Button>
-              <span className="min-w-[1rem] text-center">{quantity}</span>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => onIncrement(product.id)}
-                aria-label="Increase quantity"
-              >
-                <Plus strokeWidth={3.5} className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </div>
+        <span className="text-sm text-gray-600 flex items-center gap-1">
+          <Weight color="#4f4f4f" strokeWidth={3} />
+          {product.force}
+        </span>
+        <Button
+          variant="outline"
+          className="w-[100px]"
+          onClick={() => onToggle(product.id)}
+        >
+          {isSelected ? "Remove" : "Add"}
+        </Button>
       </CardFooter>
     </Card>
   );

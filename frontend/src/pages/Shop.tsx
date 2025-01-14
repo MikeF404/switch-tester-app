@@ -70,7 +70,7 @@ const Shop: React.FC = () => {
               <div className="text-xl">$7.99</div>
               <div className="flex gap-2">
                 <Link to="/shop/layout-tester">
-                  <Button>Learn More</Button>
+                  <Button variant="outline">About</Button>
                 </Link>
                 <Button onClick={handleAddToCart}>Add to Cart</Button>
               </div>

@@ -7,14 +7,17 @@ type KeycapType = "none" | "random" | "transparent";
 interface SwitchTesterPricingProps {
   switchCount: SwitchCount;
   setSwitchCount: React.Dispatch<React.SetStateAction<SwitchCount>>;
+  keycapType: KeycapType;
+  setKeycapType: React.Dispatch<React.SetStateAction<KeycapType>>;
 }
 
 
 const SwitchTesterPricing: React.FC<SwitchTesterPricingProps> = ({
   switchCount,
   setSwitchCount,
+  keycapType,
+  setKeycapType
 }) => {
-  const [keycapType, setKeycapType] = useState<KeycapType>("none");
   const [totalPrice, setTotalPrice] = useState<number>(9.99);
 
   const switchPrices: Record<SwitchCount, number> = {
@@ -22,7 +25,6 @@ const SwitchTesterPricing: React.FC<SwitchTesterPricingProps> = ({
     "15": 13.99,
     "20": 17.99,
   };
-
 
   const keycapPrices: Record<KeycapType, number> = {
     none: 0,

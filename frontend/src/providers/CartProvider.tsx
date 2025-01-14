@@ -86,45 +86,65 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   const addToCart = useCallback(async (item: SimpleCartItem | CustomTesterItem) => {
     try {
       const cartId = localStorage.getItem('cartId');
+      const baseUrl = 'http://localhost:8080/api/cart';
       
-      const url = new URL('http://localhost:8080/api/cart/add');
       if ('itemId' in item) {
-        // Simple item
+        // Simple item - keep using query params as it's simple data
+        const url = new URL(`${baseUrl}/add`);
         url.searchParams.append('itemId', item.itemId.toString());
         url.searchParams.append('quantity', item.quantity.toString());
         if (cartId) {
           url.searchParams.append('cartId', cartId);
         }
-      } else {
-        // Custom tester
-        // Add custom tester parameters
-        if (cartId) {
-          url.searchParams.append('cartId', cartId);
+        
+        const response = await fetch(url.toString(), {
+          method: 'POST'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to add item to cart');
         }
-        url.searchParams.append('name', item.name);
-        url.searchParams.append('size', item.size.toString());
-        url.searchParams.append('keycaps', item.keycaps);
-        url.searchParams.append('switches', JSON.stringify(item.switches));
-        url.searchParams.append('quantity', item.quantity.toString());
+
+        const data = await response.json();
+        
+        // Save the cartId if it's a new cart
+        if (!cartId && data.id) {
+          localStorage.setItem('cartId', data.id);
+        }
+
+        await updateCart();
+        return "Item added to cart";
+      } else {
+        // Custom tester - use request body
+        const response = await fetch(`${baseUrl}/add/tester`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            cartId: cartId || null,
+            name: item.name,
+            size: item.size,
+            keycaps: item.keycaps,
+            switches: item.switches,
+            quantity: item.quantity
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to add item to cart');
+        }
+
+        const data = await response.json();
+        
+        // Save the cartId if it's a new cart
+        if (!cartId && data.id) {
+          localStorage.setItem('cartId', data.id);
+        }
+
+        await updateCart();
+        return "Item added to cart";
       }
-
-      const response = await fetch(url.toString(), {
-        method: 'POST'
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to add item to cart');
-      }
-
-      const data = await response.json();
-      
-      // Save the cartId if it's a new cart
-      if (!cartId && data.id) {
-        localStorage.setItem('cartId', data.id);
-      }
-
-      await updateCart();
-      return "Item added to cart";
     } catch (error) {
       console.error("Error adding to cart:", error);
       throw error;
@@ -172,12 +192,30 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         throw new Error('Failed to update item quantity');
       }
 
-      await updateCart();
+      // Use the returned cart data directly instead of making another call
+      const cart = await response.json();
+      const transformedItems = cart.items.map((item: any) => ({
+        id: item.item.id,
+        name: item.item.name,
+        price: item.item.price,
+        quantity: item.quantity,
+        // For custom testers
+        size: item.item.size,
+        keycaps: item.item.keycaps,
+        switches: item.item.switches?.map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          quantity: s.quantity
+        }))
+      }));
+
+      setCartItems(transformedItems);
+      setCartCount(transformedItems.length);
     } catch (error) {
       console.error('Error updating item quantity:', error);
       throw error;
     }
-  }, [removeFromCart, updateCart]);
+  }, [removeFromCart]);
 
   const clearCart = useCallback(() => {
     localStorage.removeItem('cartId');

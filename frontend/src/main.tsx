@@ -18,7 +18,7 @@ import { CartProvider } from "./providers/CartProvider";
 import { AuthProvider } from "./providers/AuthProvider";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
+  
     <ThemeProvider>
       <BrowserRouter>
         <AuthProvider>
@@ -41,5 +41,5 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>
-  </React.StrictMode>
+  
 );

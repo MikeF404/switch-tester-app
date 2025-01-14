@@ -1,20 +1,22 @@
 package com.kblab.service;
 
-import com.kblab.model.Cart;
-import com.kblab.model.CartItem;
-import com.kblab.model.Item;
+import com.kblab.exception.SwitchNotFoundException;
+import com.kblab.model.*;
 import com.kblab.repository.CartRepository;
 import com.kblab.repository.CartItemRepository;
 import com.kblab.repository.ItemRepository;
 import com.kblab.exception.CartNotFoundException;
 import com.kblab.exception.ItemNotFoundException;
 import com.kblab.exception.CartItemNotFoundException;
+import com.kblab.repository.SwitchRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.List;
 
 @Service
 public class CartService {
@@ -26,6 +28,9 @@ public class CartService {
     
     @Autowired
     private ItemRepository itemRepository;
+
+    @Autowired
+    private SwitchRepository switchRepository;
 
     public Cart createCart() {
         Cart cart = new Cart();
@@ -86,5 +91,63 @@ public class CartService {
     @Transactional
     public Cart removeItemFromCart(String cartId, Long itemId) {
         return updateItemQuantity(cartId, itemId, 0);
+    }
+
+    @Transactional
+    public Cart addCustomTester(
+        String cartId,
+        String name,
+        Integer size,
+        String keycaps,
+        List<Long> switchIds,
+        Integer quantity
+    ) {
+        // Get existing cart or create new one
+        Cart cart;
+        if (cartId != null) {
+            cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new RuntimeException("Cart not found: " + cartId));
+        } else {
+            cart = new Cart();
+        }
+        
+        // Create new tester
+        Tester tester = new Tester();
+        tester.setSize(size);
+        tester.setKeycaps(keycaps);
+        tester.setName(name);
+        
+        // Calculate price based on size and keycaps
+        double basePrice = switch(size) {
+            case 10 -> 9.99;
+            case 15 -> 13.99;
+            case 20 -> 17.99;
+            default -> throw new IllegalArgumentException("Invalid size");
+        };
+        
+        double keycapPrice = switch(keycaps) {
+            case "none" -> 0;
+            case "random" -> size * 0.1;
+            case "transparent" -> size * 0.2;
+            default -> throw new IllegalArgumentException("Invalid keycap type");
+        };
+        
+        tester.setPrice(BigDecimal.valueOf(basePrice + keycapPrice));
+
+        // Add switches
+        for (Long switchId : switchIds) {
+            Switch switch_ = switchRepository.findById(switchId)
+                .orElseThrow(() -> new SwitchNotFoundException(switchId));
+            tester.addSwitch(switch_);
+        }
+
+        // Save tester first
+        tester = (Tester) itemRepository.save(tester);
+        
+        // Add to cart
+        cart.addItem(new CartItem(cart, tester, quantity));
+        
+        // Save and return cart
+        return cartRepository.save(cart);
     }
 } 
