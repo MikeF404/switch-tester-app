@@ -18,12 +18,14 @@ import { log } from "console";
 import { ModeToggle } from "./ModeToggle";
 import { useCart } from "../providers/CartProvider";
 import { useState, useEffect } from "react";
+import { useScrollDirection } from "../hooks/useScrollDirection";
 
 const Header: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth();
-  const { cartItems, clearCart } = useCart();  // Add clearCart here
+  const { cartItems, clearCart } = useCart();
   const navigate = useNavigate();
   const [animate, setAnimate] = useState(false);
+  const isVisible = useScrollDirection();
 
   const totalItemCount = cartItems.reduce(
     (total: number, item: { quantity: number }) => total + item.quantity,
@@ -46,7 +48,9 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 flex h-16 items-center justify-center gap-4 border-b bg-background px-4 md:px-6">
+    <header className={`sticky top-0 flex h-16 items-center justify-center gap-4 border-b bg-card backdrop-blur-sm px-4 md:px-6 transition-transform duration-300 ${
+      isVisible ? 'translate-y-0' : '-translate-y-full'
+    }`}>
       <div className="flex items-center justify-between max-w-[1480px] w-full">
         <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
           <Link
@@ -123,7 +127,9 @@ const Header: React.FC = () => {
           </SheetContent>
         </Sheet>
 
-        <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
+        <div className="flex w-full justify-end items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
+          {/* Search bar */}
+          {/* Not used for now 
           <form className="ml-auto flex-1 sm:flex-initial">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -134,6 +140,7 @@ const Header: React.FC = () => {
               />
             </div>
           </form>
+          */}
           <ModeToggle />
           <Link to="/cart" className="relative">
             <Button variant="secondary" size="icon" className="rounded-full">
@@ -150,6 +157,8 @@ const Header: React.FC = () => {
               </span>
             )}
           </Link>
+          {/* Not used for now */}
+          {/*
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="icon" className="rounded-full">
@@ -184,6 +193,7 @@ const Header: React.FC = () => {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+          */}
         </div>
       </div>
     </header>
