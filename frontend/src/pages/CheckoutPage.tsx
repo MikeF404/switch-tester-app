@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "@/providers/CartProvider";
 import StripeCheckout from "@/components/StripeCheckout";
+import { toast } from "sonner";
 
 export default function CheckoutPage() {
   const [zipCode, setZipCode] = useState("");
@@ -40,6 +41,57 @@ export default function CheckoutPage() {
       setTimeout(() => {
         setShippingCost(10.99);
       }, 500);
+    }
+  };
+
+  const handleProceedToPayment = async () => {
+    try {
+      const cartId = localStorage.getItem('cartId');
+      if (!cartId) {
+        toast.error("No cart found");
+        return;
+      }
+
+      const orderData = {
+        cartId,
+        email: formData.email,
+        customerName: `${formData.firstName} ${formData.lastName}`,
+        shippingAddress: {
+          street: formData.address,
+          apartment: formData.apartment,
+          city: formData.city,
+          state: formData.state,
+          zipCode: formData.zipCode,
+          country: 'US' // Add country selection if needed
+        }
+      };
+
+      const response = await fetch('http://localhost:8080/api/orders/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData)
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        if (error.insufficientStock) {
+          const items = Object.entries(error.insufficientStock)
+            .map(([name, stock]) => `${name} (${stock} available)`)
+            .join(', ');
+          toast.error(`Insufficient stock for: ${items}`);
+          return;
+        }
+        throw new Error('Failed to create order');
+      }
+
+      const order = await response.json();
+      setClientSecret(order.stripeClientSecret);
+      
+    } catch (error) {
+      console.error("Error creating order:", error);
+      toast.error("Failed to process order. Please try again.");
     }
   };
 
@@ -275,7 +327,7 @@ export default function CheckoutPage() {
                 I agree to the terms of service
               </label>
             </div>
-            <Button className="w-full" disabled={!agreedToTOS || !clientSecret}>
+            <Button className="w-full" disabled={!agreedToTOS || !clientSecret} onClick={handleProceedToPayment}>
               Pay Now
             </Button>
           </div>

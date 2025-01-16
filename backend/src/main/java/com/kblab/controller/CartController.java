@@ -2,9 +2,13 @@ package com.kblab.controller;
 
 import com.kblab.dto.CustomTesterRequest;
 import com.kblab.dto.SwitchItem;
+import com.kblab.exception.CartNotFoundException;
+import com.kblab.exception.InsufficientStockException;
 import com.kblab.model.Cart;
 import com.kblab.model.CartItem;
+import com.kblab.model.Order;
 import com.kblab.service.CartService;
+import com.kblab.service.StockVerificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +28,9 @@ import java.util.stream.Collectors;
 public class CartController {
     @Autowired
     private CartService cartService;
+
+    @Autowired
+    private StockVerificationService stockVerificationService;
 
     @GetMapping("/{cartId}")
     public ResponseEntity<Cart> getCart(@PathVariable String cartId) {
@@ -90,6 +97,27 @@ public class CartController {
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "Error processing request: " + e.getMessage()
             );
+        }
+    }
+
+    @PostMapping("/{cartId}/verify")
+    public ResponseEntity<?> verifyCart(@PathVariable String cartId) {
+        try {
+            Cart cart = cartService.getCart(cartId)
+                .orElseThrow(() -> new CartNotFoundException(cartId));
+            
+            // Create a pending order and decrease stock
+            Order pendingOrder = stockVerificationService.createPendingOrder(cart);
+            
+            return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "orderId", pendingOrder.getId()
+            ));
+            
+        } catch (InsufficientStockException e) {
+            return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(Map.of("insufficientStock", e.getInsufficientItems()));
         }
     }
 }
