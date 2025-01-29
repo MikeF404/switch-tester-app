@@ -21,19 +21,17 @@ const FeaturedItemCard: React.FC<FeaturedItemCardProps> = ({
     <Link to={link}>
       <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg">
         <CardContent className="p-0">
-          <div className="p-6">
-            <p className="text-lg mb-4">{description}</p>
-          </div>
-          <div className="overflow-hidden">
+          <div className="overflow-hidden aspect-[5/4] bg-gray-50">
             <img
               src={image}
               alt={title}
-              className="w-full h-48 object-cover object-center transition-transform duration-300 transform scale-110 hover:scale-100"
+              className="w-full h-full object-contain transition-transform duration-300 transform hover:scale-110"
             />
           </div>
-          <div className="p-6">
-            <h3 className="text-2xl font-semibold mb-2">{title}</h3>
-            <p className="text-lg font-bold">{price}</p>
+          <div className="px-4 py-2 space-y-1">
+            <h3 className="text-xl font-semibold">{title}</h3>
+            <p className="">{description}</p>
+            <p className="font-bold">{price}</p>
           </div>
         </CardContent>
       </Card>

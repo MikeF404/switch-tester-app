@@ -8,7 +8,7 @@ export const description =
 export function App() {
   return (
     <div className="flex justify-center bg-[radial-gradient(#576faa_1px,transparent_1px)] [background-size:32px_32px]">
-      <div className="flex min-h-screen max-w-[1480px] w-full flex-col">
+      <div className="flex min-h-screen max-w-[1080px] w-full flex-col">
         <div className="fixed top-0 left-0 right-0 z-50">
           <Header />
         </div>
